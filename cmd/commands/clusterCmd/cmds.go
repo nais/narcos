@@ -6,6 +6,7 @@ import (
 	"github.com/nais/narcos/pkg/naisdevice"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
+	"strings"
 )
 
 func Command() *cli.Command {
@@ -32,6 +33,9 @@ func subCommands() []*cli.Command {
 					Aliases: []string{"o"},
 					Value:   true,
 				},
+				&cli.BoolFlag{
+					Name: "prefixTenant",
+				},
 				&cli.StringFlag{
 					Name:    "tenant",
 					Aliases: []string{"t"},
@@ -50,6 +54,7 @@ func subCommands() []*cli.Command {
 			Action: func(context *cli.Context) error {
 				includeManagement := context.Bool("includeManagement")
 				includeOnprem := context.Bool("includeOnprem")
+				prefixTenant := context.Bool("prefixTenant")
 				tenant := context.String("tenant")
 
 				clusters, err := gcp.GetClusters(context.Context, includeManagement, includeOnprem, tenant)
@@ -58,7 +63,11 @@ func subCommands() []*cli.Command {
 				}
 
 				for _, cluster := range clusters {
-					fmt.Println(cluster.Name)
+					name := cluster.Name
+					if prefixTenant {
+						name = cluster.Tenant + "-" + strings.TrimPrefix(name, "nais-")
+					}
+					fmt.Println(name)
 				}
 
 				return nil
