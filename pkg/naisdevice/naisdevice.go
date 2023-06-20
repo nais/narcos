@@ -14,7 +14,7 @@ import (
 
 var (
 	// TODO: Denne listen burde hentes fra et sted
-	Tenants = []string{"NAV", "dev-nais.io", "fhi-api.com", "naas.mattilsynet.no", "nais.io", "nav.no", "ssb.no"}
+	Tenants = []string{"nav", "dev-nais.io", "fhi-api.com", "naas.mattilsynet.no", "nais.io", "nav.no", "ssb.no"}
 )
 
 func SetTenant(ctx context.Context, tenant string) error {
