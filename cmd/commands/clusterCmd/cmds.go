@@ -52,9 +52,13 @@ func subCommands() []*cli.Command {
 				includeOnprem := context.Bool("includeOnprem")
 				tenant := context.String("tenant")
 
-				_, err := gcp.GetClusters(context.Context, includeManagement, includeOnprem, tenant)
+				clusters, err := gcp.GetClusters(context.Context, includeManagement, includeOnprem, tenant)
 				if err != nil {
 					return err
+				}
+
+				for _, cluster := range clusters {
+					fmt.Println(cluster.Name)
 				}
 
 				return nil

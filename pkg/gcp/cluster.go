@@ -3,9 +3,6 @@ package gcp
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"strings"
-
 	"google.golang.org/api/cloudresourcemanager/v3"
 	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/container/v1"
@@ -23,6 +20,7 @@ type Cluster struct {
 	Endpoint string
 	Location string
 	CA       string
+	Tenant   string
 	User     *User
 }
 
@@ -39,7 +37,7 @@ func GetClusters(ctx context.Context, includeManagement, includeOnprem bool, ten
 		return nil, err
 	}
 
-	return getClusters(ctx, projects, tenant)
+	return getClusters(ctx, projects)
 }
 
 func getProjects(ctx context.Context, includeManagement, includeOnprem bool, filterTenant string) ([]Project, error) {
@@ -85,18 +83,17 @@ func getProjects(ctx context.Context, includeManagement, includeOnprem bool, fil
 	return projects, nil
 }
 
-func getClusters(ctx context.Context, projects []Project, tenant string) ([]Cluster, error) {
+func getClusters(ctx context.Context, projects []Project) ([]Cluster, error) {
 	var clusters []Cluster
 	for _, project := range projects {
-		fmt.Println(project.ID)
 		var cluster []Cluster
 		var err error
 
 		switch project.Kind {
 		case "onprem":
-			cluster, err = getOnpremClusters(ctx, project, tenant)
+			cluster, err = getOnpremClusters(ctx, project)
 		default:
-			cluster, err = getGCPClusters(ctx, project, tenant)
+			cluster, err = getGCPClusters(ctx, project)
 		}
 
 		if err != nil {
@@ -108,7 +105,7 @@ func getClusters(ctx context.Context, projects []Project, tenant string) ([]Clus
 	return clusters, nil
 }
 
-func getGCPClusters(ctx context.Context, project Project, filterTenant string) ([]Cluster, error) {
+func getGCPClusters(ctx context.Context, project Project) ([]Cluster, error) {
 	svc, err := container.NewService(ctx)
 	if err != nil {
 		return nil, err
@@ -122,21 +119,18 @@ func getGCPClusters(ctx context.Context, project Project, filterTenant string) (
 
 	var clusters []Cluster
 	for _, cluster := range response.Clusters {
-		name := cluster.Name
-		if filterTenant != "" {
-			name = project.Tenant + "-" + strings.TrimPrefix(name, "nais-")
-		}
 		clusters = append(clusters, Cluster{
-			Name:     name,
+			Name:     cluster.Name,
 			Endpoint: "https://" + cluster.Endpoint,
 			Location: cluster.Location,
 			CA:       cluster.MasterAuth.ClusterCaCertificate,
+			Tenant:   project.Tenant,
 		})
 	}
 	return clusters, nil
 }
 
-func getOnpremClusters(ctx context.Context, project Project, filterTenant string) ([]Cluster, error) {
+func getOnpremClusters(ctx context.Context, project Project) ([]Cluster, error) {
 	if project.Kind != "onprem" {
 		return nil, nil
 	}
@@ -167,12 +161,8 @@ func getOnpremClusters(ctx context.Context, project Project, filterTenant string
 			return nil, err
 		}
 
-		environment := project.Environment
-		if filterTenant != "" {
-			environment = project.Tenant + "-" + strings.TrimPrefix(environment, "nais-")
-		}
 		clusters = append(clusters, Cluster{
-			Name:     environment,
+			Name:     project.Environment,
 			Endpoint: config.URL,
 			User: &User{
 				ServerID: config.ServerID,
