@@ -164,6 +164,7 @@ func getOnpremClusters(ctx context.Context, project Project) ([]Cluster, error) 
 		clusters = append(clusters, Cluster{
 			Name:     project.Environment,
 			Endpoint: config.URL,
+			Tenant:   "nav",
 			User: &User{
 				ServerID: config.ServerID,
 				ClientID: config.ClientID,
