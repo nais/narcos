@@ -37,6 +37,7 @@ func listCmd() *cli.Command {
 				},
 			},
 		},
+		UseShortOptionHandling: true,
 		Before: func(context *cli.Context) error {
 			return gcp.ValidateUserLogin(context.Context)
 		},
