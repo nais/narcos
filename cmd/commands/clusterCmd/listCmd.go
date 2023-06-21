@@ -11,7 +11,8 @@ import (
 
 func listCmd() *cli.Command {
 	return &cli.Command{
-		Name: "list",
+		Name:    "list",
+		Aliases: []string{"l"},
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:    "includeManagement",
