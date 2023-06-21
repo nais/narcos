@@ -1,10 +1,8 @@
 package naisdevice
 
 import (
-	"context"
 	"fmt"
 	"github.com/nais/device/pkg/config"
-	"github.com/nais/device/pkg/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
@@ -17,23 +15,6 @@ var (
 	Tenants = []string{"nav", "dev-nais.io", "fhi-api.com", "naas.mattilsynet.no", "nais.io", "nav.no", "ssb.no"}
 )
 
-func SetTenant(ctx context.Context, tenant string) error {
-	connection, err := agentConnection()
-	if err != nil {
-		return err
-	}
-
-	client := pb.NewDeviceAgentClient(connection)
-	defer connection.Close()
-
-	// TODO: naisdevice gir ikke feil hvis man gir den en tenants som ikke er gyldig
-	_, err = client.SetActiveTenant(ctx, &pb.SetActiveTenantRequest{Name: tenant})
-	if err != nil {
-		return formatGrpcError(err)
-	}
-
-	return nil
-}
 func agentConnection() (*grpc.ClientConn, error) {
 	userConfigDir, err := config.UserConfigDir()
 	if err != nil {
