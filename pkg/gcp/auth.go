@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -25,8 +24,7 @@ func ValidateUserLogin(ctx context.Context) error {
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	if err != nil {
-		io.Copy(os.Stdout, buf)
-		return fmt.Errorf("error running '%v' command: %w", cmd.String(), err)
+		return fmt.Errorf("%v\nerror running '%v' command: %w", buf.String(), cmd.String(), err)
 	}
 
 	user := strings.TrimSpace(buf.String())
@@ -45,9 +43,36 @@ func ValidateUserLogin(ctx context.Context) error {
 	}
 
 	_, err = os.Stat(homedir + "/.config/gcloud/application_default_credentials.json")
-	if errors.Is(err, os.ErrNotExist) {
-		return fmt.Errorf("you are missing Application Default Credentials, run `gcloud auth application-default login` first")
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("you are missing Application Default Credentials, run `gcloud auth application-default login` first")
+		}
+		return err
 	}
 
 	return nil
+}
+
+func GetUserEmails(ctx context.Context) ([]string, error) {
+	args := []string{
+		"auth",
+		"list",
+		"--format", "value(account)",
+	}
+
+	buf := &bytes.Buffer{}
+	cmd := exec.CommandContext(ctx, "gcloud", args...)
+	cmd.Stdout = buf
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		return nil, fmt.Errorf("%v\nerror running '%v' command: %w", buf.String(), cmd.String(), err)
+	}
+
+	users := strings.Split(strings.TrimSpace(buf.String()), "\n")
+	if len(users) == 0 {
+		return nil, fmt.Errorf("no users found, are you logged in")
+	}
+
+	return users, nil
 }
