@@ -26,7 +26,8 @@ gcloud auth login --update-adc`,
 				Aliases: []string{"o"},
 			},
 			&cli.BoolFlag{
-				Name: "excludeKnada",
+				Name:    "excludeKnada",
+				Aliases: []string{"k"},
 			},
 			&cli.BoolFlag{
 				Name:  "prefixTenant",
