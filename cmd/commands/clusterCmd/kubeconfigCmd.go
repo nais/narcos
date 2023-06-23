@@ -33,8 +33,7 @@ gcloud auth login --update-adc`,
 				Value: true,
 			},
 			&cli.BoolFlag{
-				Name:  "skipNAVPrefix",
-				Value: true,
+				Name: "skipNAVPrefix",
 			},
 			&cli.BoolFlag{
 				Name:  "overwrite",
