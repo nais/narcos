@@ -3,7 +3,9 @@ package gcp
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"golang.org/x/oauth2"
 	"google.golang.org/api/cloudresourcemanager/v3"
 	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/container/v1"
@@ -87,8 +89,11 @@ func getProjects(ctx context.Context, includeManagement, includeOnprem, includeK
 	for {
 		response, err := call.Do()
 		if err != nil {
-			if strings.Contains(err.Error(), "invalid_grant") {
-				return nil, fmt.Errorf("%v\nlooks like you are missing Application Default Credentials, run `gcloud auth application-default login` first\n", err)
+			var retrieve *oauth2.RetrieveError
+			if errors.As(err, &retrieve) {
+				if retrieve.ErrorCode == "invalid_grant" {
+					return nil, fmt.Errorf("looks like you are missing Application Default Credentials, run `gcloud auth application-default login` first\n")
+				}
 			}
 
 			return nil, err
