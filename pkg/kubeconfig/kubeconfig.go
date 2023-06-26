@@ -2,7 +2,6 @@ package kubeconfig
 
 import (
 	"fmt"
-	"k8s.io/client-go/tools/clientcmd/api"
 	"os"
 	"os/exec"
 	"strings"
@@ -11,6 +10,7 @@ import (
 	"github.com/nais/narcos/pkg/gcp"
 	"golang.org/x/exp/slices"
 	kubeClient "k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/klog/v2"
 )
 
