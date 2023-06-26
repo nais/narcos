@@ -47,7 +47,7 @@ func addCluster(config *clientcmdapi.Config, cluster gcp.Cluster, overwrite, ver
 	if cluster.Kind == gcp.KindLegacy {
 		kubeconfigCluster.CertificateAuthorityData = nil
 		kubeconfigCluster.InsecureSkipTLSVerify = true
-		kubeconfigCluster.Server = gcp.GetClusterServerForLegacyGCP(cluster.Environment)
+		kubeconfigCluster.Server = gcp.GetClusterServerForLegacyGCP(cluster.Name)
 	}
 
 	config.Clusters[cluster.Name] = kubeconfigCluster

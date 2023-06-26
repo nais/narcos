@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/nais/narcos/pkg/gcp"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+	"strings"
 )
 
 func addContext(config *clientcmdapi.Config, cluster gcp.Cluster, overwrite, seperateAdmin, verbose bool, email string) {
@@ -43,12 +44,12 @@ func contextShouldNotBeInKubeconfig(email string, cluster gcp.Cluster) bool {
 	return (isEmailNais(email) && cluster.Kind == gcp.KindKNADA) ||
 		(isEmailNav(email) && cluster.Tenant != "nav") ||
 		(isEmailNav(email) && cluster.Kind == gcp.KindManagment) ||
-		(isEmailNav(email) && cluster.Environment == gcp.EnvironmentCiGCP)
+		(isEmailNav(email) && cluster.Name == "ci-gcp")
 }
 
 func contextShouldHaveSeperateAdminContext(email string, cluster gcp.Cluster, seperateAdmin bool) bool {
 	return seperateAdmin &&
 		isEmailNais(email) &&
 		cluster.Tenant == "nav" &&
-		(cluster.Environment == gcp.EnvironmentDevGCP || cluster.Environment == gcp.EnvironmentProdGCP)
+		strings.HasSuffix(cluster.Environment, "-gcp")
 }

@@ -9,10 +9,10 @@ import (
 )
 
 type Project struct {
-	ID          string
-	Tenant      string
-	Environment Environment
-	Kind        Kind
+	ID     string
+	Tenant string
+	Name   string
+	Kind   Kind
 }
 
 func getProjects(ctx context.Context, includeManagement, includeOnprem, includeKnada bool, filterTenant string) ([]Project, error) {
@@ -55,10 +55,10 @@ func getProjects(ctx context.Context, includeManagement, includeOnprem, includeK
 
 		for _, project := range response.Projects {
 			projects = append(projects, Project{
-				ID:          project.ProjectId,
-				Tenant:      project.Labels["tenant"],
-				Environment: ParseEnvironment(project.Labels["environment"]),
-				Kind:        ParseKind(project.Labels["kind"]),
+				ID:     project.ProjectId,
+				Tenant: project.Labels["tenant"],
+				Name:   project.Labels["environment"],
+				Kind:   ParseKind(project.Labels["kind"]),
 			})
 		}
 		if response.NextPageToken == "" {

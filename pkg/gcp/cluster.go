@@ -16,7 +16,7 @@ type Cluster struct {
 	Tenant      string
 	User        *OnpremUser
 	Kind        Kind
-	Environment Environment
+	Environment string
 }
 
 type OnpremUser struct {
@@ -98,7 +98,7 @@ func getGCPClusters(ctx context.Context, project Project) ([]Cluster, error) {
 			CA:          cluster.MasterAuth.ClusterCaCertificate,
 			Tenant:      project.Tenant,
 			Kind:        project.Kind,
-			Environment: project.Environment,
+			Environment: project.Name,
 		})
 	}
 	return clusters, nil
@@ -136,7 +136,7 @@ func getOnpremClusters(ctx context.Context, project Project) ([]Cluster, error) 
 		}
 
 		clusters = append(clusters, Cluster{
-			Name:     project.Environment.String(),
+			Name:     project.Name,
 			Endpoint: config.URL,
 			Tenant:   "nav",
 			Kind:     KindOnprem,
