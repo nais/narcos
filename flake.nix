@@ -20,6 +20,9 @@
       # Nixpkgs instantiated for supported system types.
       nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; });
 
+      # Remove .gits etc from the build inputs
+      src = nixpkgs.lib.cleanSource ./.;
+
     in {
 
       # Provide some binary packages for selected system types.
@@ -32,9 +35,7 @@
           default = pkgs.buildGoModule {
             pname = "narcos";
             inherit version;
-            # In 'nix develop', we don't need a copy of the source tree
-            # in the Nix store.
-            src = ./.;
+            inherit src;
 
             # how do i goflags this?
             postInstall = ''
