@@ -2,9 +2,10 @@ package kubeconfig
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/nais/narcos/pkg/gcp"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"strings"
 )
 
 func addContext(config *clientcmdapi.Config, cluster gcp.Cluster, overwrite, seperateAdmin, verbose bool, email string) {

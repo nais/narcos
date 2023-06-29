@@ -3,6 +3,7 @@ package kubeconfig
 import (
 	"encoding/base64"
 	"fmt"
+
 	"github.com/nais/narcos/pkg/gcp"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )

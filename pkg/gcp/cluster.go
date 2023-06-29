@@ -3,9 +3,10 @@ package gcp
 import (
 	"context"
 	"encoding/json"
+	"strings"
+
 	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/container/v1"
-	"strings"
 )
 
 type Cluster struct {

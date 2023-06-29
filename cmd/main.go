@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/nais/narcos/cmd/commands/clusterCmd"
-	"github.com/nais/narcos/cmd/commands/deviceCmd"
+	"github.com/nais/narcos/cmd/clustercmd"
+	"github.com/nais/narcos/cmd/devicecmd"
 	"github.com/urfave/cli/v2"
 )
 
@@ -16,8 +16,8 @@ func main() {
 		Version:     "v0.1",
 		Description: "NAIS Administrator CLI",
 		Commands: []*cli.Command{
-			deviceCmd.Command(),
-			clusterCmd.Command(),
+			devicecmd.Command(),
+			clustercmd.Command(),
 		},
 		EnableBashCompletion: true,
 		HideHelpCommand:      true,

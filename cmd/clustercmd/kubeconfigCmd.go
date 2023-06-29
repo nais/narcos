@@ -1,7 +1,8 @@
-package clusterCmd
+package clustercmd
 
 import (
 	"fmt"
+
 	"github.com/nais/narcos/pkg/gcp"
 	"github.com/nais/narcos/pkg/kubeconfig"
 	"github.com/nais/narcos/pkg/naisdevice"

@@ -2,6 +2,7 @@ package naisdevice
 
 import (
 	"context"
+
 	"github.com/nais/device/pkg/pb"
 )
 
