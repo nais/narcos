@@ -24,7 +24,7 @@ changelog:
 release:
   github:
     owner: nais
-    name: narc
+    name: narcos
   header: |
     ## narc-cli ({{ .Version }})
 
@@ -34,7 +34,7 @@ brews:
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_PUSH_TOKEN }}"
     name: narc
-    homepage: "https://github.com/nais/narc"
+    homepage: "https://github.com/nais/narcos"
     description: "NAIS Administration CLI"
     folder: Formula
     install: |
@@ -45,7 +45,7 @@ nfpms:
   - package_name: narc
     file_name_template: "{{ .PackageName }}_{{ .Version }}"
     vendor: NAV / nais team
-    homepage: "https://github.com/nais/narc"
+    homepage: "https://github.com/nais/narcos"
     maintainer: NAV / nais team
     description: "NAIS Administration CLI"
     license: MIT
