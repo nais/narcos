@@ -138,8 +138,9 @@ jobs:
         uses: "google-github-actions/auth@35b0e87d162680511bf346c299f71c9c5c379033" # ratchet:google-github-actions/auth@v1.0.0
         with:
           workload_identity_provider: ${{ secrets.NAIS_IO_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: "gh-cli@nais-io.iam.gserviceaccount.com"
+          service_account: "gh-narcos@nais-io.iam.gserviceaccount.com"
           token_format: "access_token"
+          create_credentials_file: "false"
 
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
