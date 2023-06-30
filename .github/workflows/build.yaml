@@ -140,7 +140,6 @@ jobs:
           workload_identity_provider: ${{ secrets.NAIS_IO_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: "gh-narcos@nais-io.iam.gserviceaccount.com"
           token_format: "access_token"
-          create_credentials_file: "false"
 
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
