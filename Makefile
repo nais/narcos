@@ -1,4 +1,4 @@
 .PHONY: build
 
 build:
-	go build -o narc ./cmd/
+	go build -o narc ./
