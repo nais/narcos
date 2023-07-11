@@ -68,6 +68,7 @@ func CreateKubeconfig(emails []string, clusters []gcp.Cluster, overwrite, exclud
 func isEmailNais(email string) bool {
 	return strings.HasSuffix(email, "@nais.io")
 }
+
 func isEmailNav(email string) bool {
 	return strings.HasSuffix(email, "@nav.no")
 }

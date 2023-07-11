@@ -11,10 +11,9 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var (
-	// TODO: Denne listen burde hentes fra et sted
-	Tenants = []string{"nav", "dev-nais.io", "fhi-api.com", "naas.mattilsynet.no", "nais.io", "nav.no", "ssb.no"}
-)
+// TODO: Denne listen burde hentes fra et sted
+// Kan hentes fra naisdevice.GetStatus().GetTenants()
+var Tenants = []string{"nav", "dev-nais.io", "fhi-api.com", "naas.mattilsynet.no", "nais.io", "nav.no", "ssb.no"}
 
 func agentConnection() (*grpc.ClientConn, error) {
 	userConfigDir, err := config.UserConfigDir()
