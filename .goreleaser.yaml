@@ -6,7 +6,7 @@ builds:
       - darwin_arm64
     id: narc
     dir: .
-    main: ./cmd
+    main: ./
     binary: narc
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}}

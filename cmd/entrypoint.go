@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"log"
@@ -9,7 +9,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func main() {
+func Run() {
 	app := &cli.App{
 		Name:        "narc",
 		Usage:       "NAIS Administrator CLI",
