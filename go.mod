@@ -9,7 +9,7 @@ require (
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 	golang.org/x/oauth2 v0.10.0
 	google.golang.org/api v0.129.0
-	google.golang.org/grpc v1.56.1
+	google.golang.org/grpc v1.57.0
 	k8s.io/client-go v0.27.3
 	k8s.io/klog/v2 v2.100.1
 )
