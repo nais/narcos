@@ -32,11 +32,11 @@ func ParseKind(in string) Kind {
 
 func GetClusterServerForLegacyGCP(name string) string {
 	switch name {
-	case "prod-gcp":
+	case "prod-gcp", "nav-prod-gcp":
 		return "https://10.255.240.6"
-	case "dev-gcp":
+	case "dev-gcp", "nav-dev-gcp":
 		return "https://10.255.240.5"
-	case "ci-gcp":
+	case "ci-gcp", "nav-ci-gcp":
 		return "https://10.255.240.7"
 	default:
 		return "unknown-cluster"
