@@ -37,11 +37,6 @@
             inherit version;
             inherit src;
 
-            # how do i goflags this?
-            postInstall = ''
-              mv $out/bin/cmd $out/bin/narc
-            '';
-
             # This hash locks the dependencies of this package. It is
             # necessary because of how Go requires network access to resolve
             # VCS.  See https://www.tweag.io/blog/2021-03-04-gomod2nix/ for
@@ -53,7 +48,7 @@
             #vendorSha256 = pkgs.lib.fakeSha256;
 
             vendorSha256 =
-              "sha256-K9T6I3GYSkXv97tSVPbF6r0U0+FIl17lUGRbx4T0gIc=";
+           "sha256-wdOJC3N/YKN8lwsezgIgjzU/8NTvG6QEFcCSGfFuRwk";
           };
         });
     };
