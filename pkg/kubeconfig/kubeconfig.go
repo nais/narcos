@@ -34,6 +34,11 @@ func CreateKubeconfig(emails []string, clusters []gcp.Cluster, overwrite, exclud
 	}
 
 	for _, email := range emails {
+		if !isEmailNais(email) && !isEmailNav(email) {
+			fmt.Printf("Skipping %v, not a valid nais.io or nav.no e-mail.\n", email)
+			continue
+		}
+
 		err = addUsers(config, clusters, email, overwrite, excludeOnprem, verbose)
 		if err != nil {
 			return err
