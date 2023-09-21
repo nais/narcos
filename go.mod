@@ -8,7 +8,7 @@ require (
 	github.com/urfave/cli/v2 v2.25.7
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 	golang.org/x/oauth2 v0.12.0
-	google.golang.org/api v0.141.0
+	google.golang.org/api v0.142.0
 	google.golang.org/grpc v1.58.1
 	k8s.io/client-go v0.28.2
 	k8s.io/klog/v2 v2.100.1
@@ -45,7 +45,7 @@ require (
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20230911183012-2d3300fd4832 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230913181813-007df8e322eb // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
