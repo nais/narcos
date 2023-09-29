@@ -2,12 +2,11 @@ package clustercmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/nais/narcos/pkg/gcp"
 	"github.com/nais/narcos/pkg/kubeconfig"
-	"github.com/nais/narcos/pkg/naisdevice"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/exp/slices"
 )
 
 func kubeconfigCmd() *cli.Command {
@@ -19,52 +18,16 @@ This requires that you have the gcloud command line tool installed, configured a
 gcloud auth login --update-adc`,
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
-				Name:    "excludeManagement",
-				Aliases: []string{"m"},
-			},
-			&cli.BoolFlag{
-				Name:    "excludeOnprem",
-				Aliases: []string{"o"},
-			},
-			&cli.BoolFlag{
-				Name:    "excludeKnada",
-				Aliases: []string{"k"},
-			},
-			&cli.BoolFlag{
-				Name:  "prefixTenant",
-				Value: true,
-			},
-			&cli.BoolFlag{
-				Name: "skipNAVPrefix",
-			},
-			&cli.BoolFlag{
 				Name:  "overwrite",
 				Usage: "Will overwrite users, clusters, and contexts in your kubeconfig.",
 			},
 			&cli.BoolFlag{
-				Name:    "seperateAdmin",
-				Aliases: []string{"s"},
-				Usage:   "Seperate cluster with admin user from cluster with team access. Required both a NAV and NAIS e-mail.",
-			},
-			&cli.BoolFlag{
 				Name:  "clean",
-				Usage: "Create kubeconfig from a clean slate, will remove all customization",
+				Usage: "Recreate the entire kubeconfig ",
 			},
 			&cli.BoolFlag{
 				Name:    "verbose",
 				Aliases: []string{"v"},
-			},
-			&cli.StringFlag{
-				Name:    "tenant",
-				Aliases: []string{"t"},
-				Usage:   "Specify which tenant you want config for. Default behaviour is all tenants.",
-				Action: func(context *cli.Context, tenant string) error {
-					if !slices.Contains(naisdevice.Tenants, tenant) {
-						return fmt.Errorf("%v is not a valid tenant", tenant)
-					}
-
-					return nil
-				},
 			},
 		},
 		UseShortOptionHandling: true,
@@ -72,19 +35,12 @@ gcloud auth login --update-adc`,
 			return gcp.ValidateUserLogin(context.Context)
 		},
 		Action: func(context *cli.Context) error {
-			excludeManagement := context.Bool("excludeManagement")
-			excludeOnprem := context.Bool("excludeOnprem")
-			excludeKnada := context.Bool("excludeKnada")
-			prefixTenant := context.Bool("prefixTenant")
-			skipNAVPrefix := context.Bool("skipNAVPrefix")
 			overwrite := context.Bool("overwrite")
-			seperateAdmin := context.Bool("seperateAdmin")
 			clean := context.Bool("clean")
 			verbose := context.Bool("verbose")
-			tenant := context.String("tenant")
 
 			fmt.Println("Getting clusters...")
-			clusters, err := gcp.GetClusters(context.Context, !excludeManagement, !excludeOnprem, !excludeKnada, prefixTenant, skipNAVPrefix, tenant)
+			clusters, err := gcp.GetClusters(context.Context)
 			if err != nil {
 				return err
 			}
@@ -96,8 +52,20 @@ gcloud auth login --update-adc`,
 			fmt.Printf("Found %v clusters\n", len(clusters))
 
 			emails, err := gcp.GetUserEmails(context.Context)
+			if err != nil {
+				return err
+			}
 
-			err = kubeconfig.CreateKubeconfig(emails, clusters, overwrite, excludeOnprem, clean, verbose, seperateAdmin)
+			hasSuffix := func(emails []string, suffix string) string {
+				for _, email := range emails {
+					if strings.HasSuffix(email, suffix) {
+						return email
+					}
+				}
+				panic("no user with suffix " + suffix + " found")
+			}
+
+			err = kubeconfig.CreateKubeconfig(hasSuffix(emails, "@nais.io"), clusters, overwrite, clean, verbose)
 			if err != nil {
 				return err
 			}

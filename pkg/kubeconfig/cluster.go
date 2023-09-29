@@ -8,14 +8,14 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
-func addClusters(config *clientcmdapi.Config, clusters []gcp.Cluster, email string, overwrite, seperateAdmin, verbose bool) error {
+func addClusters(config *clientcmdapi.Config, clusters []gcp.Cluster, email string, overwrite, verbose bool) error {
 	for _, cluster := range clusters {
 		err := addCluster(config, cluster, overwrite, verbose)
 		if err != nil {
 			return err
 		}
 
-		addContext(config, cluster, overwrite, seperateAdmin, verbose, email)
+		addContext(config, cluster, overwrite, verbose, email)
 	}
 
 	return nil

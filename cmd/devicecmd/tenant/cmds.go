@@ -24,7 +24,7 @@ func subCommands() []*cli.Command {
 		{
 			Name:  "list",
 			Usage: "narc device tenant list",
-			Action: func(context *cli.Context) error {
+			Action: func(_ *cli.Context) error {
 				for _, tenant := range naisdevice.Tenants {
 					fmt.Println(tenant)
 				}

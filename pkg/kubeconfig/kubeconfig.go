@@ -4,18 +4,15 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strings"
 
 	"github.com/go-logr/logr"
 	"github.com/nais/narcos/pkg/gcp"
-	"golang.org/x/exp/slices"
 	kubeClient "k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/klog/v2"
 )
 
-func CreateKubeconfig(emails []string, clusters []gcp.Cluster, overwrite, excludeOnprem, clean, verbose, seperateAdmin bool) error {
-	slices.Sort(emails)
+func CreateKubeconfig(email string, clusters []gcp.Cluster, overwrite, clean, verbose bool) error {
 	configLoad := kubeClient.NewDefaultClientConfigLoadingRules()
 
 	// If KUBECONFIG is set, but the file does not exist, kubeClient will throw a warning.
@@ -33,21 +30,14 @@ func CreateKubeconfig(emails []string, clusters []gcp.Cluster, overwrite, exclud
 		config.Clusters = map[string]*api.Cluster{}
 	}
 
-	for _, email := range emails {
-		if !isEmailNais(email) && !isEmailNav(email) {
-			fmt.Printf("Skipping %v, not a valid nais.io or nav.no e-mail.\n", email)
-			continue
-		}
+	err = addUsers(config, clusters, email, overwrite, verbose)
+	if err != nil {
+		return err
+	}
 
-		err = addUsers(config, clusters, email, overwrite, excludeOnprem, verbose)
-		if err != nil {
-			return err
-		}
-
-		err = addClusters(config, clusters, email, overwrite, seperateAdmin, verbose)
-		if err != nil {
-			return err
-		}
+	err = addClusters(config, clusters, email, overwrite, verbose)
+	if err != nil {
+		return err
 	}
 
 	err = kubeClient.WriteToFile(*config, configLoad.GetDefaultFilename())
@@ -68,12 +58,4 @@ func CreateKubeconfig(emails []string, clusters []gcp.Cluster, overwrite, exclud
 		}
 	}
 	return nil
-}
-
-func isEmailNais(email string) bool {
-	return strings.HasSuffix(email, "@nais.io")
-}
-
-func isEmailNav(email string) bool {
-	return strings.HasSuffix(email, "@nav.no")
 }

@@ -7,12 +7,8 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
-func addUsers(config *clientcmdapi.Config, clusters []gcp.Cluster, email string, overwrite, excludeOnprem, verbose bool) error {
+func addUsers(config *clientcmdapi.Config, clusters []gcp.Cluster, email string, overwrite, verbose bool) error {
 	addGCPUser(config, email, overwrite, verbose)
-
-	if excludeOnprem {
-		return nil
-	}
 
 	return addOnpremUser(config, clusters, overwrite, verbose)
 }

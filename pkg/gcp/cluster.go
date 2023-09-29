@@ -27,8 +27,8 @@ type OnpremUser struct {
 	UserName string `json:"userName"`
 }
 
-func GetClusters(ctx context.Context, includeManagement, includeOnprem, prefixTenant, includeKnada, skipNAVPrefix bool, tenant string) ([]Cluster, error) {
-	projects, err := getProjects(ctx, includeManagement, includeOnprem, includeKnada, tenant)
+func GetClusters(ctx context.Context) ([]Cluster, error) {
+	projects, err := getProjects(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -36,16 +36,6 @@ func GetClusters(ctx context.Context, includeManagement, includeOnprem, prefixTe
 	clusters, err := getClusters(ctx, projects)
 	if err != nil {
 		return nil, err
-	}
-	if prefixTenant {
-		for i, cluster := range clusters {
-			if skipNAVPrefix && cluster.Tenant == "nav" {
-				continue
-			}
-
-			cluster.Name = cluster.Tenant + "-" + strings.TrimPrefix(cluster.Name, "nais-")
-			clusters[i] = cluster
-		}
 	}
 
 	return clusters, nil
@@ -87,7 +77,7 @@ func getGCPClusters(ctx context.Context, project Project) ([]Cluster, error) {
 
 	var clusters []Cluster
 	for _, cluster := range response.Clusters {
-		name := cluster.Name
+		name := project.Tenant + "-" + strings.ReplaceAll(cluster.Name, "nais-", "")
 		if cluster.Name == "knada-gke" {
 			name = "knada"
 		}
@@ -137,7 +127,7 @@ func getOnpremClusters(ctx context.Context, project Project) ([]Cluster, error) 
 		}
 
 		clusters = append(clusters, Cluster{
-			Name:     project.Name,
+			Name:     "nav-" + project.Name,
 			Endpoint: config.URL,
 			Tenant:   "nav",
 			Kind:     KindOnprem,
@@ -150,7 +140,6 @@ func getOnpremClusters(ctx context.Context, project Project) ([]Cluster, error) 
 		})
 
 		return clusters, nil
-
 	}
 
 	return clusters, nil

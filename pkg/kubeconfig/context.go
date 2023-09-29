@@ -2,23 +2,14 @@ package kubeconfig
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/nais/narcos/pkg/gcp"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
-func addContext(config *clientcmdapi.Config, cluster gcp.Cluster, overwrite, seperateAdmin, verbose bool, email string) {
-	if contextShouldNotBeInKubeconfig(email, cluster) {
-		return
-	}
-
+func addContext(config *clientcmdapi.Config, cluster gcp.Cluster, overwrite, verbose bool, email string) {
 	contextName := cluster.Name
-	namespace := "default"
-	if contextShouldHaveSeperateAdminContext(email, cluster, seperateAdmin) {
-		contextName += "-nais"
-		namespace = "nais-system"
-	}
+	namespace := "nais-system"
 
 	if _, ok := config.Contexts[contextName]; ok && !overwrite {
 		if verbose {
@@ -39,18 +30,4 @@ func addContext(config *clientcmdapi.Config, cluster gcp.Cluster, overwrite, sep
 	}
 
 	fmt.Printf("Added context %v for %v to config\n", contextName, user)
-}
-
-func contextShouldNotBeInKubeconfig(email string, cluster gcp.Cluster) bool {
-	return (isEmailNais(email) && cluster.Kind == gcp.KindKNADA) ||
-		(isEmailNav(email) && cluster.Tenant != "nav") ||
-		(isEmailNav(email) && cluster.Kind == gcp.KindManagment) ||
-		(isEmailNav(email) && cluster.Name == "ci-gcp")
-}
-
-func contextShouldHaveSeperateAdminContext(email string, cluster gcp.Cluster, seperateAdmin bool) bool {
-	return seperateAdmin &&
-		isEmailNais(email) &&
-		cluster.Tenant == "nav" &&
-		strings.HasSuffix(cluster.Environment, "-gcp")
 }

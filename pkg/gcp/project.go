@@ -16,7 +16,7 @@ type Project struct {
 	Kind   Kind
 }
 
-func getProjects(ctx context.Context, includeManagement, includeOnprem, includeKnada bool, filterTenant string) ([]Project, error) {
+func getProjects(ctx context.Context) ([]Project, error) {
 	var projects []Project
 
 	svc, err := cloudresourcemanager.NewService(ctx)
@@ -24,21 +24,7 @@ func getProjects(ctx context.Context, includeManagement, includeOnprem, includeK
 		return nil, err
 	}
 
-	filter := "(labels.naiscluster=true OR labels.kind=legacy"
-	if includeOnprem {
-		filter += " OR labels.kind=onprem"
-	}
-	if includeKnada {
-		filter += " OR labels.kind=knada"
-	}
-	filter += ")"
-
-	if !includeManagement {
-		filter += " labels.environment:*"
-	}
-	if filterTenant != "" {
-		filter += " labels.tenant=" + filterTenant
-	}
+	filter := "labels.naiscluster=true OR labels.kind=legacy OR labels.kind=onprem OR labels.kind=knada"
 
 	call := svc.Projects.Search().Query(filter)
 	for {
