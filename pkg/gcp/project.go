@@ -24,7 +24,7 @@ func getProjects(ctx context.Context) ([]Project, error) {
 		return nil, err
 	}
 
-	filter := "labels.naiscluster=true OR labels.kind=legacy OR labels.kind=onprem OR labels.kind=knada"
+	filter := "labels.naiscluster=true OR labels.kind=knada"
 
 	call := svc.Projects.Search().Query(filter)
 	for {
@@ -33,7 +33,7 @@ func getProjects(ctx context.Context) ([]Project, error) {
 			var retrieve *oauth2.RetrieveError
 			if errors.As(err, &retrieve) {
 				if retrieve.ErrorCode == "invalid_grant" {
-					return nil, fmt.Errorf("looks like you are missing Application Default Credentials, run `gcloud auth application-default login` first\n")
+					return nil, fmt.Errorf("looks like you are missing Application Default Credentials, run `gcloud auth application-default login` first")
 				}
 			}
 

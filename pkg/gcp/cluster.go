@@ -81,6 +81,9 @@ func getGCPClusters(ctx context.Context, project Project) ([]Cluster, error) {
 		if cluster.Name == "knada-gke" {
 			name = "knada"
 		}
+		if cluster.Name == "nais-io" {
+			name = "nais-io"
+		}
 
 		clusters = append(clusters, Cluster{
 			Name:        name,

@@ -13,7 +13,7 @@ import (
 
 // TODO: Denne listen burde hentes fra et sted
 // Kan hentes fra naisdevice.GetStatus().GetTenants()
-var Tenants = []string{"nav", "dev-nais.io", "fhi-api.com", "naas.mattilsynet.no", "nais.io", "nav.no", "ssb.no"}
+var Tenants = []string{"nav", "dev-nais.io", "fhi-api.com", "naas.mattilsynet.no", "nais.io", "ssb.no"}
 
 func agentConnection() (*grpc.ClientConn, error) {
 	userConfigDir, err := config.UserConfigDir()
