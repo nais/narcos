@@ -1,11 +1,11 @@
-package clustercmd
+package cluster
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/nais/narcos/pkg/gcp"
-	"github.com/nais/narcos/pkg/kubeconfig"
+	"github.com/nais/narcos/internal/gcp"
+	"github.com/nais/narcos/internal/kubeconfig"
 	"github.com/urfave/cli/v2"
 )
 

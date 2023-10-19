@@ -6,7 +6,7 @@ import (
 	"os/exec"
 
 	"github.com/go-logr/logr"
-	"github.com/nais/narcos/pkg/gcp"
+	"github.com/nais/narcos/internal/gcp"
 	kubeClient "k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/klog/v2"

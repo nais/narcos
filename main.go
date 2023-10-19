@@ -1,7 +1,7 @@
 package main
 
-import "github.com/nais/narcos/cmd"
+import "github.com/nais/narcos/internal/cli"
 
 func main() {
-	cmd.Run()
+	cli.Run()
 }

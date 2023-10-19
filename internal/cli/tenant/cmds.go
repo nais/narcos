@@ -4,16 +4,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/nais/narcos/pkg/naisdevice"
+	"github.com/nais/narcos/internal/naisdevice"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/exp/slices"
 )
 
 func Command() *cli.Command {
 	return &cli.Command{
 		Name:            "tenant",
-		Aliases:         []string{"t"},
-		Usage:           "Manage tenants.",
+		Usage:           "naisdevice tenant operations",
 		HideHelpCommand: true,
 		Subcommands:     subCommands(),
 	}
@@ -24,8 +22,12 @@ func subCommands() []*cli.Command {
 		{
 			Name:  "list",
 			Usage: "narc device tenant list",
-			Action: func(_ *cli.Context) error {
-				for _, tenant := range naisdevice.Tenants {
+			Action: func(ctx *cli.Context) error {
+				tenants, err := naisdevice.ListTenants(ctx.Context)
+				if err != nil {
+					return err
+				}
+				for _, tenant := range tenants {
 					fmt.Println(tenant)
 				}
 				return nil
@@ -41,9 +43,6 @@ func subCommands() []*cli.Command {
 				}
 
 				tenant := strings.TrimSpace(ctx.Args().First())
-				if !slices.Contains(naisdevice.Tenants, tenant) {
-					return fmt.Errorf("unknown tenant %v, must be one of: %v", tenant, naisdevice.Tenants)
-				}
 
 				err := naisdevice.SetTenant(ctx.Context, tenant)
 				if err != nil {
@@ -51,6 +50,21 @@ func subCommands() []*cli.Command {
 				}
 
 				fmt.Println("Tenant has been set to ", tenant)
+
+				return nil
+			},
+		},
+		{
+			Name:        "get",
+			Usage:       "narc device tenant get",
+			Description: "Gets the name of the currently active tenant",
+			Action: func(ctx *cli.Context) error {
+				tenant, err := naisdevice.GetTenant(ctx.Context)
+				if err != nil {
+					return err
+				}
+
+				fmt.Println(tenant)
 
 				return nil
 			},

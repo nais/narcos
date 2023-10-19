@@ -1,9 +1,9 @@
-package clustercmd
+package cluster
 
 import (
 	"fmt"
 
-	"github.com/nais/narcos/pkg/gcp"
+	"github.com/nais/narcos/internal/gcp"
 	"github.com/urfave/cli/v2"
 )
 
