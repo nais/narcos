@@ -63,7 +63,9 @@ func agentStatus(ctx context.Context) (*pb.AgentStatus, error) {
 	client := pb.NewDeviceAgentClient(connection)
 	defer connection.Close()
 
-	sc, err := client.Status(ctx, &pb.AgentStatusRequest{})
+	sc, err := client.Status(ctx, &pb.AgentStatusRequest{
+		KeepConnectionOnComplete: true,
+	})
 	if err != nil {
 		return nil, formatGrpcError(err)
 	}
