@@ -9,7 +9,7 @@ require (
 	github.com/nais/device v0.0.0-20231015180516-b1b78f6570b9
 	github.com/urfave/cli/v2 v2.25.7
 	golang.org/x/oauth2 v0.14.0
-	google.golang.org/api v0.150.0
+	google.golang.org/api v0.151.0
 	google.golang.org/grpc v1.59.0
 	k8s.io/client-go v0.28.4
 	k8s.io/klog/v2 v2.110.1
