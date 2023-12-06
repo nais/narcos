@@ -7,9 +7,9 @@ toolchain go1.21.1
 require (
 	github.com/go-logr/logr v1.3.0
 	github.com/nais/device v0.0.0-20231015180516-b1b78f6570b9
-	github.com/urfave/cli/v2 v2.25.7
+	github.com/urfave/cli/v2 v2.26.0
 	golang.org/x/oauth2 v0.15.0
-	google.golang.org/api v0.152.0
+	google.golang.org/api v0.153.0
 	google.golang.org/grpc v1.59.0
 	k8s.io/client-go v0.28.4
 	k8s.io/klog/v2 v2.110.1
