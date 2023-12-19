@@ -10,7 +10,7 @@ require (
 	github.com/urfave/cli/v2 v2.26.0
 	golang.org/x/oauth2 v0.15.0
 	google.golang.org/api v0.154.0
-	google.golang.org/grpc v1.60.0
+	google.golang.org/grpc v1.60.1
 	k8s.io/client-go v0.29.0
 	k8s.io/klog/v2 v2.110.1
 )
