@@ -29,7 +29,7 @@ func ValidateUserLogin(ctx context.Context) error {
 
 	user := strings.TrimSpace(buf.String())
 	if !strings.HasSuffix(user, "@nais.io") {
-		return fmt.Errorf("active gcloud-user is not a nais.io-user: %v", user)
+		return fmt.Errorf("active gcloud user is not a nais.io user: %v", user)
 	}
 
 	_, exists := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS")
