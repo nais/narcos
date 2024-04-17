@@ -9,9 +9,9 @@ require (
 	github.com/nais/device v0.0.0-20231015180516-b1b78f6570b9
 	github.com/urfave/cli/v2 v2.27.1
 	golang.org/x/oauth2 v0.19.0
-	google.golang.org/api v0.172.0
+	google.golang.org/api v0.173.0
 	google.golang.org/grpc v1.63.2
-	k8s.io/client-go v0.29.3
+	k8s.io/client-go v0.29.4
 	k8s.io/klog/v2 v2.120.1
 )
 
@@ -58,7 +58,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apimachinery v0.29.3 // indirect
+	k8s.io/apimachinery v0.29.4 // indirect
 	k8s.io/utils v0.0.0-20240310230437-4693a0247e57 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
