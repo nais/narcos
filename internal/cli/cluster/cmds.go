@@ -17,6 +17,7 @@ func Command() *cli.Command {
 func subCommands() []*cli.Command {
 	return []*cli.Command{
 		kubeconfigCmd(),
+		kubeconfigV2Cmd(),
 		listCmd(),
 	}
 }

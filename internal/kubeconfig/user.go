@@ -7,13 +7,12 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
-func addUsers(config *clientcmdapi.Config, clusters []gcp.Cluster, email string, overwrite, verbose bool) error {
+func addUsers(config *clientcmdapi.Config, clusters []gcp.Cluster, email string, overwrite, verbose bool) {
 	addGCPUser(config, email, overwrite, verbose)
-
-	return addOnpremUser(config, clusters, overwrite, verbose)
+	addOnpremUser(config, clusters, overwrite, verbose)
 }
 
-func addOnpremUser(config *clientcmdapi.Config, clusters []gcp.Cluster, overwrite, verbose bool) error {
+func addOnpremUser(config *clientcmdapi.Config, clusters []gcp.Cluster, overwrite, verbose bool) {
 	for _, cluster := range clusters {
 		if cluster.Kind == gcp.KindOnprem {
 			user := cluster.User
@@ -48,10 +47,9 @@ func addOnpremUser(config *clientcmdapi.Config, clusters []gcp.Cluster, overwrit
 
 			fmt.Printf("Added user %v to config\n", user.UserName)
 
-			return nil
+			return
 		}
 	}
-	return nil
 }
 
 func addGCPUser(config *clientcmdapi.Config, email string, overwrite, verbose bool) {
