@@ -1,21 +1,22 @@
 module github.com/nais/narcos
 
 go 1.22
-
 toolchain go1.22.2
 
 require (
 	github.com/go-logr/logr v1.4.1
 	github.com/nais/device v0.0.0-20231015180516-b1b78f6570b9
-	github.com/urfave/cli/v2 v2.27.1
-	golang.org/x/oauth2 v0.19.0
-	google.golang.org/api v0.173.0
-	google.golang.org/grpc v1.63.2
-	k8s.io/client-go v0.29.4
+	github.com/urfave/cli/v2 v2.27.2
+	golang.org/x/oauth2 v0.20.0
+	google.golang.org/api v0.181.0
+	google.golang.org/grpc v1.64.0
+	k8s.io/client-go v0.30.1
 	k8s.io/klog/v2 v2.120.1
 )
 
 require (
+	cloud.google.com/go/auth v0.4.1 // indirect
+	cloud.google.com/go/auth/oauth2adapt v0.2.2 // indirect
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
@@ -28,7 +29,7 @@ require (
 	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
-	github.com/googleapis/gax-go/v2 v2.12.3 // indirect
+	github.com/googleapis/gax-go/v2 v2.12.4 // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kr/text v0.2.0 // indirect
@@ -46,19 +47,20 @@ require (
 	go.opentelemetry.io/otel v1.25.0 // indirect
 	go.opentelemetry.io/otel/metric v1.25.0 // indirect
 	go.opentelemetry.io/otel/trace v1.25.0 // indirect
-	golang.org/x/crypto v0.22.0 // indirect
-	golang.org/x/net v0.24.0 // indirect
-	golang.org/x/sys v0.19.0 // indirect
-	golang.org/x/term v0.19.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/crypto v0.23.0 // indirect
+	golang.org/x/net v0.25.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/term v0.20.0 // indirect
+	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240415180920-8c6c420018be // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240506185236-b8a5c65736ae // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240513163218-0867130af1f8 // indirect
+	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apimachinery v0.29.4 // indirect
+	k8s.io/apimachinery v0.30.1 // indirect
 	k8s.io/utils v0.0.0-20240310230437-4693a0247e57 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
