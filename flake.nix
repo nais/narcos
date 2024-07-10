@@ -35,6 +35,9 @@
           inherit version;
           src = ./.;
           vendorHash = "sha256-WcjMG/HsSEYCEDMl5Hpm/il+dKzHHIz64o18f63IGKg=";
+          postInstall = ''
+            mv $out/bin/narcos $out/bin/narc
+          '';
         };
         default = narc;
       }
