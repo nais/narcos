@@ -34,7 +34,7 @@
           pname = "narc";
           inherit version;
           src = ./.;
-          vendorHash = "sha256-LeGYv4RgaR48v7IQaKQ1eqDVXpQMxW+K1TGZYecinaY=";
+          vendorHash = "sha256-z8H602yJbmpvoOER41TU5P0F5HOuhMAcuupExJ7r19c=";
           postInstall = ''
             mv $out/bin/narcos $out/bin/narc
           '';
