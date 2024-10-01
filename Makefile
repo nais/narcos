@@ -1,7 +1,7 @@
 .PHONY: build
 
 build: check fmt
-	go build -o narc ./
+	go build -o narc cmd/narc/main.go
 
 check: staticcheck vulncheck deadcode
 
