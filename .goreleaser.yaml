@@ -1,4 +1,11 @@
+version: 2
+
 project_name: narc-cli
+
+before:
+  hooks:
+    - go mod tidy
+
 builds:
   - targets:
       - linux_amd64
@@ -28,14 +35,14 @@ release:
     ## narc-cli ({{ .Version }})
 
 brews:
-  - tap:
+  - repository:
       owner: nais
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_PUSH_TOKEN }}"
     name: narc
     homepage: "https://github.com/nais/narcos"
     description: "NAIS Administration CLI"
-    folder: Formula
+    directory: Formula
     install: |
       bin.install "narc"
     test: |
