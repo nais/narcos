@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/nais/narcos/internal/gcp"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
@@ -45,9 +46,7 @@ func addCluster(config *clientcmdapi.Config, cluster gcp.Cluster, overwrite, ver
 		Server:                   cluster.Endpoint,
 		CertificateAuthorityData: ca,
 	}
-
-	legacyClusters := []string{"dev-gcp", "prod-gcp", "ci-gcp"}
-	isLegacy := cluster.Kind == gcp.KindLegacy || slices.Contains(legacyClusters, cluster.Name)
+	isLegacy := cluster.Kind == gcp.KindLegacy || (strings.HasPrefix(cluster.Name, "nav") && strings.HasSuffix(cluster.Name, "gcp"))
 
 	if isLegacy {
 		kubeconfigCluster.CertificateAuthorityData = nil
