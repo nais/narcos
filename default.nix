@@ -10,6 +10,6 @@ buildGoApplication {
   src = ./.;
   modules = ./gomod2nix.toml;
   postInstall = ''
-    mv $out/bin/narcos $out/bin/narc
+    [[ -f $out/bin/narcos ]] && mv $out/bin/narcos $out/bin/narc
   '';
 }
