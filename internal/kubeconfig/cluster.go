@@ -45,7 +45,7 @@ func addCluster(config *clientcmdapi.Config, cluster gcp.Cluster, overwrite, ver
 		Server:                   cluster.Endpoint,
 		CertificateAuthorityData: ca,
 	}
-	isLegacy := cluster.Kind == gcp.KindLegacy || (strings.HasPrefix(cluster.Name, "nav") && strings.HasSuffix(cluster.Name, "gcp"))
+	isLegacy := cluster.Kind == gcp.KindLegacy || (strings.EqualFold("nav", cluster.Tenant) && strings.HasSuffix(cluster.Name, "gcp"))
 
 	if isLegacy {
 		kubeconfigCluster.CertificateAuthorityData = nil
