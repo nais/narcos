@@ -3,7 +3,6 @@ package kubeconfig
 import (
 	"encoding/base64"
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/nais/narcos/internal/gcp"
