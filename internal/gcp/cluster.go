@@ -3,10 +3,13 @@ package gcp
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"net/http"
 	"strings"
 
 	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/container/v1"
+	"google.golang.org/api/googleapi"
 )
 
 type Cluster struct {
@@ -57,6 +60,7 @@ func getClusters(ctx context.Context, projects []Project) ([]Cluster, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		clusters = append(clusters, cluster...)
 	}
 
@@ -72,6 +76,11 @@ func getGCPClusters(ctx context.Context, project Project) ([]Cluster, error) {
 	call := svc.Projects.Locations.Clusters.List("projects/" + project.ID + "/locations/-")
 	response, err := call.Do()
 	if err != nil {
+		if apiErr, ok := err.(*googleapi.Error); ok && apiErr.Code == http.StatusForbidden {
+			fmt.Printf("No access to project %s, skipping\n", project.ID)
+			return nil, nil
+		}
+
 		return nil, err
 	}
 
