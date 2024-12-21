@@ -1,36 +1,57 @@
 {
   description = "narcos cli - for nais admins";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.gomod2nix.url = "github:nix-community/gomod2nix";
-  inputs.gomod2nix.inputs.nixpkgs.follows = "nixpkgs";
-  inputs.gomod2nix.inputs.flake-utils.follows = "flake-utils";
+  inputs.nixpkgs.url = "nixpkgs/nixos-unstable";
 
   outputs = {
     self,
     nixpkgs,
-    flake-utils,
-    gomod2nix,
   }: let
     version = builtins.substring 0 8 (self.lastModifiedDate or self.lastModified or "19700101");
-  in (
-    flake-utils.lib.eachDefaultSystem
-    (system: let
-      pkgs = nixpkgs.legacyPackages.${system};
-
-      # The current default sdk for macOS fails to compile go projects, so we use a newer one for now.
-      # This has no effect on other platforms.
-      callPackage = pkgs.darwin.apple_sdk_11_0.callPackage or pkgs.callPackage;
-    in {
-      packages.default = callPackage ./. {
-        inherit (gomod2nix.legacyPackages.${system}) buildGoApplication;
+    # goOverlay = final: prev: {
+    #   go = prev.go.overrideAttrs (old: {
+    #     version = "1.23.2";
+    #     src = prev.fetchurl {
+    #       url = "https://go.dev/dl/go1.23.2.src.tar.gz";
+    #       hash = "sha256-NpMBYqk99BfZC9IsbhTa/0cFuqwrAkGO3aZxzfqc0H8=";
+    #     };
+    #   });
+    # };
+    withSystem = nixpkgs.lib.genAttrs [
+      "x86_64-linux"
+      "x86_64-darwin"
+      "aarch64-linux"
+      "aarch64-darwin"
+    ];
+    withPkgs = callback:
+      withSystem (
+        system:
+          callback (
+            import nixpkgs {
+              inherit system;
+              # overlays = [goOverlay];
+            }
+          )
+      );
+  in {
+    packages = withPkgs (pkgs: rec {
+      narc = pkgs.buildGoModule {
+        pname = "narc";
         inherit version;
+        src = ./.;
+        vendorHash = "sha256-H4rEmJLNDRyrbxZMB0dVgGpjHFM7vl+hxUU7fF9oucM=";
       };
-      devShells.default = callPackage ./shell.nix {
-        inherit (gomod2nix.legacyPackages.${system}) mkGoEnv gomod2nix;
+      default = narc;
+    });
+
+    devShells = withPkgs (pkgs: {
+      default = pkgs.mkShell {
+        buildInputs = with pkgs; [
+          go
+        ];
       };
-      formatter = pkgs.nixfmt-rfc-style;
-    })
-  );
+    });
+
+    formatter = withPkgs (pkgs: pkgs.nixfmt-rfc-style);
+  };
 }
