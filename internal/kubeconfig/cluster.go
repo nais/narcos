@@ -3,7 +3,6 @@ package kubeconfig
 import (
 	"encoding/base64"
 	"fmt"
-	"strings"
 
 	"github.com/nais/narcos/internal/gcp"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
@@ -11,6 +10,13 @@ import (
 
 func addClusters(config *clientcmdapi.Config, clusters []gcp.Cluster, email string, overwrite, verbose bool) error {
 	for _, cluster := range clusters {
+		switch cluster.Name {
+		case "nav-dev-gcp":
+			cluster.Name = "nav-dev-gcp-legacy"
+		case "nav-dev":
+			cluster.Name = "nav-dev-gcp"
+		}
+
 		err := addCluster(config, cluster, overwrite, verbose)
 		if err != nil {
 			return err
@@ -45,7 +51,8 @@ func addCluster(config *clientcmdapi.Config, cluster gcp.Cluster, overwrite, ver
 		Server:                   cluster.Endpoint,
 		CertificateAuthorityData: ca,
 	}
-	isLegacy := cluster.Kind == gcp.KindLegacy || (strings.EqualFold("nav", cluster.Tenant) && strings.HasSuffix(cluster.Name, "gcp"))
+
+	isLegacy := cluster.Kind == gcp.KindLegacy || cluster.Name == "nav-ci-gcp" || cluster.Name == "nav-prod-gcp"
 
 	if isLegacy {
 		kubeconfigCluster.CertificateAuthorityData = nil
