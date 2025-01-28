@@ -8,7 +8,7 @@ func Command() *cli.Command {
 	return &cli.Command{
 		Name:            "cluster",
 		Aliases:         []string{"c"},
-		Description:     "Operate on NAIS clusters",
+		Description:     "Operate on Nais clusters",
 		HideHelpCommand: true,
 		Subcommands:     subCommands(),
 	}

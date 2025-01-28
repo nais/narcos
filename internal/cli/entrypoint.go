@@ -12,9 +12,9 @@ import (
 func Run() {
 	app := &cli.App{
 		Name:        "narc",
-		Usage:       "NAIS Administrator CLI",
+		Usage:       "Nais Administrator CLI",
 		Version:     "v0.1",
-		Description: "NAIS Administrator CLI",
+		Description: "Nais Administrator CLI",
 		Commands: []*cli.Command{
 			tenant.Command(),
 			cluster.Command(),

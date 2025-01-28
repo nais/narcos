@@ -1,4 +1,4 @@
-# NAIS Adminstrator CLI Og Scripts
+# *N*ais *A*dminst*r*ator *C*LI *o*g *S*cripts
 
 > Clies are necessary when the script is too difficult to believe - Pablo Esclibar
 
