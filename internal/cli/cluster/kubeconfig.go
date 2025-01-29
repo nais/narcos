@@ -1,12 +1,13 @@
 package cluster
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/nais/narcos/internal/gcp"
 	"github.com/nais/narcos/internal/kubeconfig"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func kubeconfigCmd() *cli.Command {
@@ -31,16 +32,16 @@ gcloud auth login --update-adc`,
 			},
 		},
 		UseShortOptionHandling: true,
-		Before: func(context *cli.Context) error {
-			return gcp.ValidateUserLogin(context.Context)
+		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
+			return ctx, gcp.ValidateUserLogin(ctx)
 		},
-		Action: func(context *cli.Context) error {
-			overwrite := context.Bool("overwrite")
-			clean := context.Bool("clean")
-			verbose := context.Bool("verbose")
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			overwrite := cmd.Bool("overwrite")
+			clean := cmd.Bool("clean")
+			verbose := cmd.Bool("verbose")
 
 			fmt.Println("Getting clusters...")
-			clusters, err := gcp.GetClusters(context.Context)
+			clusters, err := gcp.GetClusters(ctx)
 			if err != nil {
 				return err
 			}
@@ -51,7 +52,7 @@ gcloud auth login --update-adc`,
 
 			fmt.Printf("Found %v clusters\n", len(clusters))
 
-			emails, err := gcp.GetUserEmails(context.Context)
+			emails, err := gcp.GetUserEmails(ctx)
 			if err != nil {
 				return err
 			}

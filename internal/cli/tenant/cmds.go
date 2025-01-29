@@ -1,11 +1,12 @@
 package tenant
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/nais/narcos/internal/naisdevice"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func Command() *cli.Command {
@@ -13,7 +14,7 @@ func Command() *cli.Command {
 		Name:            "tenant",
 		Usage:           "Work with different Nais tenants.",
 		HideHelpCommand: true,
-		Subcommands:     subCommands(),
+		Commands:        subCommands(),
 	}
 }
 
@@ -22,8 +23,8 @@ func subCommands() []*cli.Command {
 		{
 			Name:  "list",
 			Usage: "narc tenant list",
-			Action: func(ctx *cli.Context) error {
-				tenants, err := naisdevice.ListTenants(ctx.Context)
+			Action: func(ctx context.Context, _ *cli.Command) error {
+				tenants, err := naisdevice.ListTenants(ctx)
 				if err != nil {
 					return err
 				}
@@ -37,14 +38,14 @@ func subCommands() []*cli.Command {
 			Name:      "set",
 			Usage:     "narc tenant set <tenant>",
 			ArgsUsage: "name of the tenant",
-			Action: func(ctx *cli.Context) error {
-				if ctx.Args().Len() != 1 {
+			Action: func(ctx context.Context, cmd *cli.Command) error {
+				if cmd.Args().Len() != 1 {
 					return fmt.Errorf("missing required arguments: tenant name")
 				}
 
-				tenant := strings.TrimSpace(ctx.Args().First())
+				tenant := strings.TrimSpace(cmd.Args().First())
 
-				err := naisdevice.SetTenant(ctx.Context, tenant)
+				err := naisdevice.SetTenant(ctx, tenant)
 				if err != nil {
 					return err
 				}
@@ -58,8 +59,8 @@ func subCommands() []*cli.Command {
 			Name:        "get",
 			Usage:       "narc tenant get",
 			Description: "Gets the name of the currently active tenant",
-			Action: func(ctx *cli.Context) error {
-				tenant, err := naisdevice.GetTenant(ctx.Context)
+			Action: func(ctx context.Context, cmd *cli.Command) error {
+				tenant, err := naisdevice.GetTenant(ctx)
 				if err != nil {
 					return err
 				}

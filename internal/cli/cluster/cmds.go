@@ -1,7 +1,7 @@
 package cluster
 
 import (
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func Command() *cli.Command {
@@ -10,7 +10,7 @@ func Command() *cli.Command {
 		Aliases:         []string{"c"},
 		Description:     "Operate on Nais clusters",
 		HideHelpCommand: true,
-		Subcommands:     subCommands(),
+		Commands:        subCommands(),
 	}
 }
 

@@ -1,10 +1,11 @@
 package cluster
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/nais/narcos/internal/gcp"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func listCmd() *cli.Command {
@@ -12,11 +13,11 @@ func listCmd() *cli.Command {
 		Name:                   "list",
 		Aliases:                []string{"l"},
 		UseShortOptionHandling: true,
-		Before: func(context *cli.Context) error {
-			return gcp.ValidateUserLogin(context.Context)
+		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
+			return ctx, gcp.ValidateUserLogin(ctx)
 		},
-		Action: func(context *cli.Context) error {
-			clusters, err := gcp.GetClusters(context.Context)
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			clusters, err := gcp.GetClusters(ctx)
 			if err != nil {
 				return err
 			}
