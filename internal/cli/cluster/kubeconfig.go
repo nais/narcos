@@ -23,7 +23,7 @@ gcloud auth login --update-adc`,
 			},
 			&cli.BoolFlag{
 				Name:  "clean",
-				Usage: "Recreate the entire kubeconfig ",
+				Usage: "Recreate the entire kubeconfig.",
 			},
 			&cli.BoolFlag{
 				Name:    "verbose",

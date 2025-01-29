@@ -35,7 +35,7 @@ func subCommands() []*cli.Command {
 		},
 		{
 			Name:      "set",
-			Usage:     "narc tenant set [tenant]",
+			Usage:     "narc tenant set <tenant>",
 			ArgsUsage: "name of the tenant",
 			Action: func(ctx *cli.Context) error {
 				if ctx.Args().Len() != 1 {
