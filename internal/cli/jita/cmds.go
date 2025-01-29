@@ -85,7 +85,7 @@ func subCommands() []*cli.Command {
 					}
 					text = strings.TrimSpace(text)
 					if len(text) == 0 {
-						return fmt.Errorf("You MUST specify a reason for privilege escalation.")
+						return fmt.Errorf("you MUST specify a reason for privilege escalation")
 					}
 					reason = text
 					fmt.Println()
@@ -107,7 +107,7 @@ func subCommands() []*cli.Command {
 					}
 					text = strings.TrimSpace(text)
 					if text != "Y" && text != "y" && text != "yes" && text != "" {
-						return fmt.Errorf("Exiting.")
+						return fmt.Errorf("exiting")
 					}
 				}
 
