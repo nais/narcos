@@ -11,7 +11,7 @@ import (
 func Command() *cli.Command {
 	return &cli.Command{
 		Name:            "tenant",
-		Usage:           "naisdevice tenant operations",
+		Usage:           "Work with different Nais tenants.",
 		HideHelpCommand: true,
 		Subcommands:     subCommands(),
 	}
@@ -21,7 +21,7 @@ func subCommands() []*cli.Command {
 	return []*cli.Command{
 		{
 			Name:  "list",
-			Usage: "narc device tenant list",
+			Usage: "narc tenant list",
 			Action: func(ctx *cli.Context) error {
 				tenants, err := naisdevice.ListTenants(ctx.Context)
 				if err != nil {
@@ -35,7 +35,7 @@ func subCommands() []*cli.Command {
 		},
 		{
 			Name:      "set",
-			Usage:     "narc device tenant set [tenant]",
+			Usage:     "narc tenant set [tenant]",
 			ArgsUsage: "name of the tenant",
 			Action: func(ctx *cli.Context) error {
 				if ctx.Args().Len() != 1 {
@@ -56,7 +56,7 @@ func subCommands() []*cli.Command {
 		},
 		{
 			Name:        "get",
-			Usage:       "narc device tenant get",
+			Usage:       "narc tenant get",
 			Description: "Gets the name of the currently active tenant",
 			Action: func(ctx *cli.Context) error {
 				tenant, err := naisdevice.GetTenant(ctx.Context)
