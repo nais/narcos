@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/nais/narcos/internal/cli/cluster"
+	"github.com/nais/narcos/internal/cli/jita"
 	"github.com/nais/narcos/internal/cli/tenant"
 	"github.com/urfave/cli/v3"
 )
@@ -19,6 +20,7 @@ func Run() {
 		Commands: []*cli.Command{
 			tenant.Command(),
 			cluster.Command(),
+			jita.Command(),
 		},
 		EnableShellCompletion: true,
 		HideHelpCommand:       true,
