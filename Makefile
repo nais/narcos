@@ -1,4 +1,4 @@
-.PHONY: build
+.PHONY: build check staticcheck vulncheck deadcode fmt test
 
 build: check fmt
 	go build -o narc cmd/narc/main.go
@@ -16,3 +16,6 @@ deadcode:
 
 fmt:
 	go run mvdan.cc/gofumpt@latest -w ./
+
+test:
+	go test ./...
