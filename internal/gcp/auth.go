@@ -76,3 +76,13 @@ func GetUserEmails(ctx context.Context) ([]string, error) {
 
 	return users, nil
 }
+
+func GCloudAccessToken(ctx context.Context) (string, error) {
+	cmd := exec.CommandContext(ctx, "gcloud", "auth", "print-access-token")
+	output, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+	token := strings.TrimSpace(string(output))
+	return token, nil
+}

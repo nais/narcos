@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/nais/narcos/internal/gcp"
 	"github.com/urfave/cli/v3"
 )
 
@@ -47,7 +48,7 @@ func subCommands() []*cli.Command {
 					return fmt.Errorf("missing required argument: TENANT")
 				}
 
-				entitlement := cmd.Args().Get(0)
+				entitlementName := cmd.Args().Get(0)
 				tenant := cmd.Args().Get(1)
 				duration := cmd.Duration("duration")
 				reason := cmd.String("reason")
@@ -57,7 +58,7 @@ func subCommands() []*cli.Command {
 
 				if duration == 0 {
 					promptedFlags++
-					fmt.Printf("How long do you need the `%s` privilege? [30m]: ", entitlement)
+					fmt.Printf("How long do you need the `%s` privilege? [30m]: ", entitlementName)
 					text, err := stdin.ReadString('\n')
 					if err != nil {
 						return err
@@ -93,7 +94,7 @@ func subCommands() []*cli.Command {
 
 				fmt.Printf("*** ESCALATE PRIVILEGES ***\n")
 				fmt.Println()
-				fmt.Printf("Entitlement...: %s\n", entitlement)
+				fmt.Printf("Entitlement...: %s\n", entitlementName)
 				fmt.Printf("Tenant........: %s\n", tenant)
 				fmt.Printf("Duration......: %s\n", duration)
 				fmt.Printf("Reason........: %s\n", reason)
@@ -112,7 +113,29 @@ func subCommands() []*cli.Command {
 				}
 
 				fmt.Println()
+
+				tenantFolderIDs := gcp.TenantNaisFolderIDMapping()
+				if _, ok := tenantFolderIDs[tenant]; !ok {
+					return fmt.Errorf("invalid tenant %q", tenant)
+				}
+
+				entitlements, err := gcp.ListEntitlements(ctx, tenantFolderIDs[tenant])
+				if err != nil {
+					return fmt.Errorf("GCP returned error while listing entitlements: %w", err)
+				}
+
+				entitlement := entitlements.GetByName(entitlementName)
+				if entitlement == nil {
+					return fmt.Errorf("entitlement with name %q does not exist for this tenant", entitlementName)
+				}
+
+				fmt.Printf("Roles granted.: %v\n", entitlement.Roles())
+				fmt.Printf("Max duration..: %s\n", entitlement.MaxDuration())
+
+				fmt.Println()
 				fmt.Println("FIXME: this isn't really implemented yet")
+
+				// FIXME: make a request with entitlement.Name
 
 				return nil
 			},
