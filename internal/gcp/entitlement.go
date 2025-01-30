@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -76,6 +77,60 @@ func (ent Entitlement) MaxDuration() time.Duration {
 	return duration
 }
 
+// List all grants for a given entitlement, looping through pagination as needed.
+func (ent Entitlement) ListActiveGrants(ctx context.Context, userName string) ([]Grant, error) {
+	const urlTemplate = "https://privilegedaccessmanager.googleapis.com/v1beta/%s/grants"
+
+	urlBase := fmt.Sprintf(urlTemplate, ent.Name)
+
+	accessToken, err := GCloudAccessToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	grants := make([]Grant, 0)
+
+	urlValues := url.Values{}
+	urlValues.Set("filter", fmt.Sprintf(`state = "ACTIVE" AND requester = "%s"`, userName))
+	urlValues.Set("pageSize", "500")
+	requestURL := urlBase + "?" + urlValues.Encode()
+
+	for len(requestURL) > 0 {
+		req, err := http.NewRequest(http.MethodGet, requestURL, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("Authorization", "Bearer "+accessToken)
+		req.Header.Set("Accept", "application/json")
+
+		response, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		body, err := io.ReadAll(response.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		grantsResponse, err := ParseGrantsResponse(body)
+		if err != nil {
+			return nil, err
+		}
+
+		grants = append(grants, grantsResponse.Grants...)
+		if len(grantsResponse.NextPageToken) == 0 {
+			break
+		}
+
+		urlValues.Set("pageToken", grantsResponse.NextPageToken)
+		requestURL = urlBase + "?" + urlValues.Encode()
+	}
+
+	return grants, nil
+}
+
 // From Google API.
 type Justification struct {
 	Text string `json:"unstructuredJustification"`
@@ -83,8 +138,42 @@ type Justification struct {
 
 type Grant struct {
 	// Name              string `json:"name"`
+	CreateTime        string        `json:"createTime,omitempty"`
+	Requester         string        `json:"requester,omitempty"`
 	RequestedDuration string        `json:"requestedDuration"`
 	Justification     Justification `json:"justification"`
+}
+
+func (grant Grant) Duration() time.Duration {
+	requestedDuration, _ := time.ParseDuration(grant.RequestedDuration)
+	return requestedDuration
+}
+
+func (grant Grant) TimeRemaining() time.Duration {
+	grantTime, err := time.Parse(time.RFC3339, grant.CreateTime)
+	if err != nil {
+		return 0
+	}
+
+	expires := grantTime.Add(grant.Duration())
+
+	return expires.Sub(time.Now()).Truncate(time.Second)
+}
+
+// https://cloud.google.com/iam/docs/reference/pam/rest/v1beta/ListGrantsResponse
+type ListGrantsResponse struct {
+	Grants        []Grant `json:"grants"`
+	NextPageToken string  `json:"nextPageToken"`
+}
+
+// https://cloud.google.com/iam/docs/reference/pam/rest/v1beta/ListGrantsResponse
+func ParseGrantsResponse(grantsData []byte) (*ListGrantsResponse, error) {
+	var resp ListGrantsResponse
+	err := json.Unmarshal(grantsData, &resp)
+	if err != nil {
+		return nil, fmt.Errorf("json decode error: %w", err)
+	}
+	return &resp, nil
 }
 
 // Create a Grant object needed to elevate privileges.
@@ -193,7 +282,6 @@ func (r EntitlementsResponse) GetByName(tenantName string) *Entitlement {
 
 func ParseEntitlementResponse(entitlementData []byte) (EntitlementsResponse, error) {
 	var resp EntitlementsResponse
-
 	err := json.Unmarshal(entitlementData, &resp)
 	return resp, err
 }

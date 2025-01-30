@@ -77,12 +77,20 @@ func GetUserEmails(ctx context.Context) ([]string, error) {
 	return users, nil
 }
 
-func GCloudAccessToken(ctx context.Context) (string, error) {
-	cmd := exec.CommandContext(ctx, "gcloud", "auth", "print-access-token")
+func shellCommandOutput(ctx context.Context, name string, args ...string) (string, error) {
+	cmd := exec.CommandContext(ctx, name, args...)
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
 	}
 	token := strings.TrimSpace(string(output))
 	return token, nil
+}
+
+func GCloudAccessToken(ctx context.Context) (string, error) {
+	return shellCommandOutput(ctx, "gcloud", "auth", "print-access-token")
+}
+
+func GCloudActiveUser(ctx context.Context) (string, error) {
+	return shellCommandOutput(ctx, "gcloud", "auth", "list", "--filter", "status:ACTIVE", "--format", "value(account)")
 }

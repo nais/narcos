@@ -21,8 +21,75 @@ func Command() *cli.Command {
 	}
 }
 
+type YesNoIcon bool
+
+func (yn YesNoIcon) String() string {
+	if yn {
+		return "✅"
+	} else {
+		return "⛔"
+	}
+}
+
 func subCommands() []*cli.Command {
 	return []*cli.Command{
+		{
+			Name:      "list",
+			Usage:     "List active and possible privilege escalations",
+			UsageText: "narc jita list <TENANT>",
+			Action: func(ctx context.Context, cmd *cli.Command) error {
+				if cmd.NArg() < 1 {
+					return fmt.Errorf("Syntax: " + cmd.UsageText)
+				}
+
+				userName, err := gcp.GCloudActiveUser(ctx)
+				if err != nil {
+					return err
+				}
+
+				tenantName := cmd.Args().Get(0)
+
+				tenantMetadata, err := gcp.FetchTenantMetadata(tenantName)
+				if err != nil {
+					return fmt.Errorf("GCP error fetching tenant metadata: %w", err)
+				}
+
+				entitlements, err := gcp.ListEntitlements(ctx, tenantMetadata.NaisFolderID)
+				if err != nil {
+					return fmt.Errorf("GCP error listing entitlements: %w", err)
+				}
+
+				fmt.Printf("Granted  Entitlement           Remaining  Duration   Roles\n")
+				fmt.Printf("-------------------------------------------------------------\n")
+
+				for _, ent := range entitlements.Entitlements {
+					var hasGrants YesNoIcon
+					var timeRemaining string
+					var maxDuration = ent.MaxDuration()
+
+					fmt.Printf("Fetching...")
+
+					grants, err := ent.ListActiveGrants(ctx, userName)
+					if err != nil {
+						return err
+					} else if len(grants) > 0 {
+						hasGrants = true
+						timeRemaining = grants[0].TimeRemaining().String()
+						maxDuration = grants[0].Duration()
+					}
+
+					fmt.Printf("\r%-6s  %-20s  %-9s  %-9s  %s\n",
+						hasGrants,
+						ent.ShortName(),
+						timeRemaining, // placeholder
+						maxDuration,
+						ent.Roles(),
+					)
+				}
+
+				return nil
+			},
+		},
 		{
 			Name:        "grant",
 			Usage:       "Elevate privileges for this tenant",
@@ -147,8 +214,6 @@ func subCommands() []*cli.Command {
 				fmt.Printf("***   WITH GREAT POWER COMES GREAT RESPONSIBILITY.   ***\n")
 				fmt.Printf("***             THINK BEFORE YOU TYPE!               ***\n")
 				fmt.Println()
-
-				// FIXME: make a request with entitlement.Name
 
 				return nil
 			},
