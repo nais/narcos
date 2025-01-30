@@ -41,24 +41,44 @@ func subCommands() []*cli.Command {
 			},
 			Action: func(ctx context.Context, cmd *cli.Command) error {
 				if cmd.NArg() < 1 {
-					return fmt.Errorf("missing required argument: ENTITLEMENT")
+					return fmt.Errorf("Syntax: " + cmd.UsageText)
 				}
 
 				if cmd.NArg() < 2 {
-					return fmt.Errorf("missing required argument: TENANT")
+					return fmt.Errorf("Syntax: " + cmd.UsageText)
 				}
 
 				entitlementName := cmd.Args().Get(0)
-				tenant := cmd.Args().Get(1)
+				tenantName := cmd.Args().Get(1)
 				duration := cmd.Duration("duration")
 				reason := cmd.String("reason")
+
+				/////
+				// Fetch metadata from Google
+				tenantMetadata, err := gcp.FetchTenantMetadata(tenantName)
+				if err != nil {
+					return fmt.Errorf("GCP error fetching tenant metadata: %w", err)
+				}
+
+				entitlements, err := gcp.ListEntitlements(ctx, tenantMetadata.NaisFolderID)
+				if err != nil {
+					return fmt.Errorf("GCP error listing entitlements: %w", err)
+				}
+
+				entitlement := entitlements.GetByName(entitlementName)
+				if entitlement == nil {
+					return fmt.Errorf("entitlement with name %q does not exist for this tenant", entitlementName)
+				}
+
+				/////
+				// Read remaining parameters
 
 				stdin := bufio.NewReader(os.Stdin)
 				promptedFlags := 0
 
 				if duration == 0 {
 					promptedFlags++
-					fmt.Printf("How long do you need the `%s` privilege? [30m]: ", entitlementName)
+					fmt.Printf("How long do you need the `%s` privilege? (30m - %s) [30m]: ", entitlementName, entitlement.MaxDuration())
 					text, err := stdin.ReadString('\n')
 					if err != nil {
 						return err
@@ -95,7 +115,7 @@ func subCommands() []*cli.Command {
 				fmt.Printf("*** ESCALATE PRIVILEGES ***\n")
 				fmt.Println()
 				fmt.Printf("Entitlement...: %s\n", entitlementName)
-				fmt.Printf("Tenant........: %s\n", tenant)
+				fmt.Printf("Tenant........: %s\n", tenantName)
 				fmt.Printf("Duration......: %s\n", duration)
 				fmt.Printf("Reason........: %s\n", reason)
 				fmt.Println()
@@ -113,27 +133,20 @@ func subCommands() []*cli.Command {
 				}
 
 				fmt.Println()
+				fmt.Println("Now elevating privileges...")
 
-				tenantFolderIDs := gcp.TenantNaisFolderIDMapping()
-				if _, ok := tenantFolderIDs[tenant]; !ok {
-					return fmt.Errorf("invalid tenant %q", tenant)
-				}
+				grant := gcp.NewGrant(duration, reason)
 
-				entitlements, err := gcp.ListEntitlements(ctx, tenantFolderIDs[tenant])
+				err = gcp.ElevatePrivileges(ctx, *entitlement, grant)
 				if err != nil {
-					return fmt.Errorf("GCP returned error while listing entitlements: %w", err)
+					return fmt.Errorf("GCP error requesting grant: %w", err)
 				}
-
-				entitlement := entitlements.GetByName(entitlementName)
-				if entitlement == nil {
-					return fmt.Errorf("entitlement with name %q does not exist for this tenant", entitlementName)
-				}
-
-				fmt.Printf("Roles granted.: %v\n", entitlement.Roles())
-				fmt.Printf("Max duration..: %s\n", entitlement.MaxDuration())
 
 				fmt.Println()
-				fmt.Println("FIXME: this isn't really implemented yet")
+				fmt.Printf("***       YOUR PRIVILEGES HAVE BEEN ESCALATED.       ***\n")
+				fmt.Printf("***   WITH GREAT POWER COMES GREAT RESPONSIBILITY.   ***\n")
+				fmt.Printf("***             THINK BEFORE YOU TYPE!               ***\n")
+				fmt.Println()
 
 				// FIXME: make a request with entitlement.Name
 

@@ -1,6 +1,7 @@
 package gcp
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -10,71 +11,38 @@ import (
 	"time"
 )
 
-type FolderID int
+type FolderID string
 
-// FIXME: this is a mockup; get real data from a bucket instead
-func TenantNaisFolderIDMapping() map[string]FolderID {
-	return map[string]FolderID{
-		"dev-nais.io": 0,
-	}
+func (folderID FolderID) entitlementsID() string {
+	return fmt.Sprintf("%s/locations/global/entitlements", folderID)
 }
 
-// bucket://FOO/nav.no.json
-// en fil per tenant
-// laget av TF
-type DetSomLiggerPaaBoetta struct {
-	//TenantName       string
-	NaisFolderID     FolderID
-	EntitlementNames []string // [nais-admin, nais-viewer]
-}
-
-func ParseEntitlementResponse(entitlementData []byte) (EntitlementsResponse, error) {
-	var resp EntitlementsResponse
-
-	err := json.Unmarshal(entitlementData, &resp)
-	return resp, err
-}
-
-// Return a list of possible entitlements that can be granted.
+// nais-terraform-modules exports tenant metadata through a public Google storage bucket.
 //
-// The folder ID is a reference to the `nais` folder of a specific tenant.
-func ListEntitlements(ctx context.Context, folderID FolderID) (*EntitlementsResponse, error) {
-	id := entitlementsID(folderID)
-	url := fmt.Sprintf(
-		"https://privilegedaccessmanager.googleapis.com/v1beta/%s:search?callerAccessType=GRANT_REQUESTER",
-		id,
-	)
-
-	accessToken, err := GCloudAccessToken(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Authorization", "Bearer "+accessToken)
-
-	response, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := ParseEntitlementResponse(body)
-	if err != nil {
-		return nil, err
-	}
-
-	return &data, nil
+// Each tenant corresponds to a single file on this bucket.
+// The file has the same name as the tenant domain, suffixed with .json.
+type TenantMetadata struct {
+	NaisFolderID FolderID `json:"folderId"`
 }
 
+func FetchTenantMetadata(tenantName string) (*TenantMetadata, error) {
+	const urlTemplate = "https://storage.googleapis.com/nais-tenant-data/%s.json"
+
+	url := fmt.Sprintf(urlTemplate, tenantName)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	metadata := &TenantMetadata{}
+	decoder := json.NewDecoder(resp.Body)
+	err = decoder.Decode(metadata)
+
+	return metadata, err
+}
+
+// From Google API.
 type Entitlement struct {
 	Name               string `json:"name"`
 	MaxRequestDuration string `json:"maxRequestDuration"`
@@ -108,6 +76,107 @@ func (ent Entitlement) MaxDuration() time.Duration {
 	return duration
 }
 
+// From Google API.
+type Justification struct {
+	Text string `json:"unstructuredJustification"`
+}
+
+type Grant struct {
+	// Name              string `json:"name"`
+	RequestedDuration string        `json:"requestedDuration"`
+	Justification     Justification `json:"justification"`
+}
+
+// Create a Grant object needed to elevate privileges.
+//
+// https://cloud.google.com/iam/docs/reference/pam/rest/v1beta/folders.locations.entitlements.grants#Grant.Justification
+// https://cloud.google.com/iam/docs/pam-request-temporary-elevated-access#iam-pam-request-grants-search-rest
+// https://protobuf.dev/reference/protobuf/google.protobuf/#duration
+func NewGrant(duration time.Duration, justification string) Grant {
+	return Grant{
+		RequestedDuration: fmt.Sprintf("%.0fs", duration.Seconds()),
+		Justification: Justification{
+			Text: justification,
+		},
+	}
+}
+
+// Request a "grant" for the "entitlement" at Google APIs
+//
+// https://cloud.google.com/iam/docs/reference/pam/rest/v1beta/folders.locations.entitlements.grants/create
+func ElevatePrivileges(ctx context.Context, ent Entitlement, grant Grant) error {
+	const urlTemplate = "https://privilegedaccessmanager.googleapis.com/v1beta/%s/grants"
+
+	url := fmt.Sprintf(urlTemplate, ent.Name)
+
+	accessToken, err := GCloudAccessToken(ctx)
+	if err != nil {
+		return err
+	}
+
+	payload, err := json.Marshal(grant)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(payload))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode >= 400 {
+		errorMessage, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("server returned %q: %q", resp.Status, errorMessage)
+	}
+
+	return nil
+}
+
+// Return a list of possible entitlements that can be granted.
+//
+// The folder ID is a reference to the `nais` folder of a specific tenant.
+func ListEntitlements(ctx context.Context, folderID FolderID) (*EntitlementsResponse, error) {
+	const urlTemplate = "https://privilegedaccessmanager.googleapis.com/v1beta/%s:search?callerAccessType=GRANT_REQUESTER"
+
+	url := fmt.Sprintf(urlTemplate, folderID.entitlementsID())
+
+	accessToken, err := GCloudAccessToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+
+	response, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := ParseEntitlementResponse(body)
+	if err != nil {
+		return nil, err
+	}
+
+	return &data, nil
+}
+
 // Actual Entitlements response from GCP
 type EntitlementsResponse struct {
 	Entitlements []Entitlement `json:"entitlements"`
@@ -122,6 +191,9 @@ func (r EntitlementsResponse) GetByName(tenantName string) *Entitlement {
 	return nil
 }
 
-func entitlementsID(folderID FolderID) string {
-	return fmt.Sprintf("folders/%d/locations/global/entitlements", folderID)
+func ParseEntitlementResponse(entitlementData []byte) (EntitlementsResponse, error) {
+	var resp EntitlementsResponse
+
+	err := json.Unmarshal(entitlementData, &resp)
+	return resp, err
 }

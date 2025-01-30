@@ -8,6 +8,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestGrantFormat(t *testing.T) {
+	grant := gcp.NewGrant(time.Hour*24, "foo")
+	assert.Equal(t, "86400s", grant.RequestedDuration)
+	assert.Equal(t, "foo", grant.Justification.Text)
+
+	grant = gcp.NewGrant(time.Millisecond*1600, "foobar")
+	assert.Equal(t, "2s", grant.RequestedDuration)
+	assert.Equal(t, "foobar", grant.Justification.Text)
+}
+
 func TestEntitlementParsing(t *testing.T) {
 	resp, err := gcp.ParseEntitlementResponse([]byte(entitlementData))
 	assert.NoError(t, err)
