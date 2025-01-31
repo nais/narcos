@@ -70,13 +70,12 @@ func subCommands() []*cli.Command {
 					return fmt.Errorf("GCP error listing entitlements: %w", err)
 				}
 
-				fmt.Printf("Granted  Entitlement           Remaining  Duration\n")
-				fmt.Printf("-----------------------------------------------------\n")
+				fmt.Printf("Granted  Entitlement           Remaining  Max. duration\n")
+				fmt.Printf("----------------------------------------------------------\n")
 
 				for _, ent := range entitlements.Entitlements {
 					var hasGrants YesNoIcon
 					var timeRemaining string
-					maxDuration := ent.MaxDuration()
 
 					fmt.Printf("Fetching...")
 
@@ -86,14 +85,13 @@ func subCommands() []*cli.Command {
 					} else if len(grants) > 0 {
 						hasGrants = true
 						timeRemaining = grants[0].TimeRemaining().String()
-						maxDuration = grants[0].Duration()
 					}
 
 					fmt.Printf("\r%-6s  %-20s  %-9s  %-9s\n",
 						hasGrants,
 						ent.ShortName(),
 						timeRemaining, // placeholder
-						maxDuration,
+						ent.MaxDuration(),
 					)
 					if cmd.Bool("verbose") {
 						for _, role := range ent.Roles() {
