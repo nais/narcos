@@ -15,7 +15,7 @@ import (
 func Command() *cli.Command {
 	return &cli.Command{
 		Name:            "jita",
-		Usage:           "Just-in-time privilege elevationjw for tenants.",
+		Usage:           "Just-in-time privilege elevation for tenants.",
 		HideHelpCommand: true,
 		Commands:        subCommands(),
 	}
@@ -47,7 +47,7 @@ func subCommands() []*cli.Command {
 			},
 			Action: func(ctx context.Context, cmd *cli.Command) error {
 				if cmd.NArg() < 1 {
-					return fmt.Errorf("Syntax: " + cmd.UsageText)
+					return fmt.Errorf("syntax: %s", cmd.UsageText)
 				}
 
 				userName, err := gcp.GCloudActiveUser(ctx)
@@ -120,11 +120,11 @@ func subCommands() []*cli.Command {
 			},
 			Action: func(ctx context.Context, cmd *cli.Command) error {
 				if cmd.NArg() < 1 {
-					return fmt.Errorf("Syntax: " + cmd.UsageText)
+					return fmt.Errorf("syntax: %s", cmd.UsageText)
 				}
 
 				if cmd.NArg() < 2 {
-					return fmt.Errorf("Syntax: " + cmd.UsageText)
+					return fmt.Errorf("syntax: %s", cmd.UsageText)
 				}
 
 				entitlementName := cmd.Args().Get(0)
@@ -136,12 +136,12 @@ func subCommands() []*cli.Command {
 				// Fetch metadata from Google
 				tenantMetadata, err := gcp.FetchTenantMetadata(tenantName)
 				if err != nil {
-					return fmt.Errorf("GCP error fetching tenant metadata: %w", err)
+					return fmt.Errorf("fetching tenant metadata: %w", err)
 				}
 
 				entitlements, err := gcp.ListEntitlements(ctx, tenantMetadata.NaisFolderID)
 				if err != nil {
-					return fmt.Errorf("GCP error listing entitlements: %w", err)
+					return fmt.Errorf("listing entitlements: %w", err)
 				}
 
 				entitlement := entitlements.GetByName(entitlementName)
@@ -176,7 +176,7 @@ func subCommands() []*cli.Command {
 
 				if len(reason) == 0 {
 					promptedFlags++
-					fmt.Print("Why do you need to elevate privileges? Please provide a human-readable description.\n")
+					fmt.Print("Why do you need to elevate privileges? Please provide a human-readable description .\n")
 					fmt.Print("This value is sent to the tenant, and will be read by someone.\n")
 					fmt.Print("Reason: ")
 					text, err := stdin.ReadString('\n')
@@ -185,7 +185,7 @@ func subCommands() []*cli.Command {
 					}
 					text = strings.TrimSpace(text)
 					if len(text) == 0 {
-						return fmt.Errorf("you MUST specify a reason for privilege elevationjw")
+						return fmt.Errorf("you MUST specify a reason for privilege elevation")
 					}
 					reason = text
 					fmt.Println()
