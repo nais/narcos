@@ -116,6 +116,10 @@ func (ent Entitlement) ListActiveGrants(ctx context.Context, userName string) ([
 			return nil, err
 		}
 
+		if response.StatusCode >= 400 {
+			return nil, fmt.Errorf("server returned %q", response.Status)
+		}
+
 		body, err := io.ReadAll(response.Body)
 		if err != nil {
 			return nil, err
