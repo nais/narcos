@@ -45,6 +45,9 @@ func subCommands() []*cli.Command {
 					Usage:       "display roles contained in each entitlement",
 				},
 			},
+			Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
+				return ctx, gcp.ValidateUserLogin(ctx)
+			},
 			Action: func(ctx context.Context, cmd *cli.Command) error {
 				if cmd.NArg() < 1 {
 					return fmt.Errorf("syntax: %s", cmd.UsageText)
@@ -117,6 +120,9 @@ func subCommands() []*cli.Command {
 					Name:  "reason",
 					Usage: "Human-readable description of why you need to elevate privileges. This value is read by the tenant.",
 				},
+			},
+			Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
+				return ctx, gcp.ValidateUserLogin(ctx)
 			},
 			Action: func(ctx context.Context, cmd *cli.Command) error {
 				if cmd.NArg() < 1 {
