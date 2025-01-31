@@ -15,7 +15,7 @@ import (
 func Command() *cli.Command {
 	return &cli.Command{
 		Name:            "jita",
-		Usage:           "Just-in-time privilege escalation for tenants.",
+		Usage:           "Just-in-time privilege elevationjw for tenants.",
 		HideHelpCommand: true,
 		Commands:        subCommands(),
 	}
@@ -35,8 +35,16 @@ func subCommands() []*cli.Command {
 	return []*cli.Command{
 		{
 			Name:      "list",
-			Usage:     "List active and possible privilege escalations",
+			Usage:     "List active and possible privilege elevations",
 			UsageText: "narc jita list <TENANT>",
+			Flags: []cli.Flag{
+				&cli.BoolFlag{
+					Aliases:     []string{"v"},
+					Name:        "verbose",
+					HideDefault: true,
+					Usage:       "display roles contained in each entitlement",
+				},
+			},
 			Action: func(ctx context.Context, cmd *cli.Command) error {
 				if cmd.NArg() < 1 {
 					return fmt.Errorf("Syntax: " + cmd.UsageText)
@@ -59,13 +67,13 @@ func subCommands() []*cli.Command {
 					return fmt.Errorf("GCP error listing entitlements: %w", err)
 				}
 
-				fmt.Printf("Granted  Entitlement           Remaining  Duration   Roles\n")
-				fmt.Printf("-------------------------------------------------------------\n")
+				fmt.Printf("Granted  Entitlement           Remaining  Duration\n")
+				fmt.Printf("-----------------------------------------------------\n")
 
 				for _, ent := range entitlements.Entitlements {
 					var hasGrants YesNoIcon
 					var timeRemaining string
-					var maxDuration = ent.MaxDuration()
+					maxDuration := ent.MaxDuration()
 
 					fmt.Printf("Fetching...")
 
@@ -78,13 +86,17 @@ func subCommands() []*cli.Command {
 						maxDuration = grants[0].Duration()
 					}
 
-					fmt.Printf("\r%-6s  %-20s  %-9s  %-9s  %s\n",
+					fmt.Printf("\r%-6s  %-20s  %-9s  %-9s\n",
 						hasGrants,
 						ent.ShortName(),
 						timeRemaining, // placeholder
 						maxDuration,
-						ent.Roles(),
 					)
+					if cmd.Bool("verbose") {
+						for _, role := range ent.Roles() {
+							fmt.Printf("           `- %s\n", role)
+						}
+					}
 				}
 
 				return nil
@@ -173,13 +185,13 @@ func subCommands() []*cli.Command {
 					}
 					text = strings.TrimSpace(text)
 					if len(text) == 0 {
-						return fmt.Errorf("you MUST specify a reason for privilege escalation")
+						return fmt.Errorf("you MUST specify a reason for privilege elevationjw")
 					}
 					reason = text
 					fmt.Println()
 				}
 
-				fmt.Printf("*** ESCALATE PRIVILEGES ***\n")
+				fmt.Printf("*** ELEVATE PRIVILEGES ***\n")
 				fmt.Println()
 				fmt.Printf("Entitlement...: %s\n", entitlementName)
 				fmt.Printf("Tenant........: %s\n", tenantName)
@@ -200,7 +212,7 @@ func subCommands() []*cli.Command {
 				}
 
 				fmt.Println()
-				fmt.Println("Now elevating privileges...")
+				fmt.Println("Elevating privileges...")
 
 				grant := gcp.NewGrant(duration, reason)
 
@@ -210,7 +222,7 @@ func subCommands() []*cli.Command {
 				}
 
 				fmt.Println()
-				fmt.Printf("***       YOUR PRIVILEGES HAVE BEEN ESCALATED.       ***\n")
+				fmt.Printf("***       YOUR PRIVILEGES HAVE BEEN ELEVATED.        ***\n")
 				fmt.Printf("***   WITH GREAT POWER COMES GREAT RESPONSIBILITY.   ***\n")
 				fmt.Printf("***             THINK BEFORE YOU TYPE!               ***\n")
 				fmt.Println()

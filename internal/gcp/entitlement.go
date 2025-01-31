@@ -36,6 +36,13 @@ func FetchTenantMetadata(tenantName string) (*TenantMetadata, error) {
 		return nil, err
 	}
 
+	if resp.StatusCode == 404 {
+		return nil, fmt.Errorf("unknown tenant %q", tenantName)
+	}
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("server returned %q", resp.Status)
+	}
+
 	metadata := &TenantMetadata{}
 	decoder := json.NewDecoder(resp.Body)
 	err = decoder.Decode(metadata)
@@ -157,7 +164,7 @@ func (grant Grant) TimeRemaining() time.Duration {
 
 	expires := grantTime.Add(grant.Duration())
 
-	return expires.Sub(time.Now()).Truncate(time.Second)
+	return time.Until(expires).Truncate(time.Second)
 }
 
 // https://cloud.google.com/iam/docs/reference/pam/rest/v1beta/ListGrantsResponse
