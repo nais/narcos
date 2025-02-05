@@ -9,6 +9,7 @@ before:
 builds:
   - targets:
       - linux_amd64
+      - linux_arm64
       - darwin_amd64
       - darwin_arm64
     id: narc
@@ -49,7 +50,7 @@ brews:
       assert_match version, shell_output("#{bin}/narc version")
 nfpms:
   - package_name: narc
-    file_name_template: "{{ .PackageName }}_{{ .Version }}"
+    file_name_template: "{{ .PackageName }}_{{ .Version }}_{{ .Arch }}"
     vendor: NAV / nais team
     homepage: "https://github.com/nais/narcos"
     maintainer: NAV / nais team
