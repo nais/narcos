@@ -107,7 +107,7 @@ func subCommands() []*cli.Command {
 			Name:        "grant",
 			Usage:       "Elevate privileges for this tenant",
 			UsageText:   "narc jita grant <ENTITLEMENT> <TENANT> [--duration DURATION] [--reason REASON]",
-			Description: "TENANT is one of the tenants given by `narc tenant list`\nENTITLEMENT is one of `nais-view` or `nais-admin`\nDURATION is the amount of time you need privileges for, given as 0h0m\nREASON is a human-readable description of why you need to elevate privileges.",
+			Description: "TENANT is one of the tenants given by `narc tenant list`\nENTITLEMENT is one the entitlements given by `narc jita list <TENANT>`\nDURATION is the amount of time you need privileges for, given as 0h0m\nREASON is a human-readable description of why you need to elevate privileges.",
 			Flags: []cli.Flag{
 				&cli.DurationFlag{
 					Name:        "duration",
