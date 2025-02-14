@@ -3,14 +3,27 @@ package gcp
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"strings"
 )
 
-func ValidateUserLogin(ctx context.Context) error {
+func activeGoogleCredentials(ctx context.Context) error {
+	cmd := exec.CommandContext(ctx, "gcloud", "auth", "print-access-token")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("running 'gcloud auth print-access-token' command: %w", err)
+	}
+	// Ensure the output is not an empty token
+	if strings.TrimSpace(string(output)) == "" {
+		return fmt.Errorf("no active google credentials found")
+	}
+
+	return nil
+}
+
+func activeNaisUser(ctx context.Context) error {
 	args := []string{
 		"config",
 		"list",
@@ -24,7 +37,7 @@ func ValidateUserLogin(ctx context.Context) error {
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	if err != nil {
-		return fmt.Errorf("%v\nerror running '%v' command: %w", buf.String(), cmd.String(), err)
+		return fmt.Errorf("running gcloud command %q: %w", strings.Join(args, " "), err)
 	}
 
 	user := strings.TrimSpace(buf.String())
@@ -32,22 +45,15 @@ func ValidateUserLogin(ctx context.Context) error {
 		return fmt.Errorf("active gcloud user is not a nais.io user: %v", user)
 	}
 
-	_, exists := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS")
-	if exists {
-		return nil
-	}
+	return nil
+}
 
-	homedir, err := os.UserHomeDir()
-	if err != nil {
-		return err
+func ValidateUserLogin(ctx context.Context) error {
+	if err := activeGoogleCredentials(ctx); err != nil {
+		return fmt.Errorf("checking active google credentials: %w", err)
 	}
-
-	_, err = os.Stat(homedir + "/.config/gcloud/application_default_credentials.json")
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return fmt.Errorf("you are missing Application Default Credentials, run `gcloud auth application-default login` first")
-		}
-		return err
+	if err := activeNaisUser(ctx); err != nil {
+		return fmt.Errorf("checking for active Nais user: %w", err)
 	}
 
 	return nil

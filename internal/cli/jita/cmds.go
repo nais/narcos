@@ -46,7 +46,11 @@ func subCommands() []*cli.Command {
 				},
 			},
 			Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
-				return ctx, gcp.ValidateUserLogin(ctx)
+				err := gcp.ValidateUserLogin(ctx)
+				if err != nil {
+					return ctx, fmt.Errorf("checking valid user login: %w", err)
+				}
+				return ctx, err
 			},
 			Action: func(ctx context.Context, cmd *cli.Command) error {
 				if cmd.NArg() < 1 {
