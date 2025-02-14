@@ -178,8 +178,10 @@ func subCommands() []*cli.Command {
 						if err != nil {
 							return err
 						}
+						if duration < time.Minute*30 || duration > entitlement.MaxDuration() {
+							return fmt.Errorf("duration must be between 30m and %s", entitlement.MaxDuration())
+						}
 					}
-					fmt.Println()
 				}
 
 				if len(reason) == 0 {
