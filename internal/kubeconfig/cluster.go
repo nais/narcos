@@ -11,10 +11,12 @@ import (
 func addClusters(config *clientcmdapi.Config, clusters []gcp.Cluster, email string, overwrite, verbose bool) error {
 	for _, cluster := range clusters {
 		switch cluster.Name {
-		case "nav-dev-gcp":
-			cluster.Name = "nav-dev-gcp-legacy"
 		case "nav-dev":
 			cluster.Name = "nav-dev-gcp"
+		case "nav-prod-gcp":
+			cluster.Name = "nav-prod-gcp-legacy"
+		case "nav-prod":
+			cluster.Name = "nav-prod-gcp"
 		}
 
 		err := addCluster(config, cluster, overwrite, verbose)
