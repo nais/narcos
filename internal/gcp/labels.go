@@ -32,8 +32,6 @@ func ParseKind(in string) Kind {
 
 func GetClusterServerForLegacyGCP(name string) string {
 	switch name {
-	case "prod-gcp", "nav-prod-gcp":
-		return "https://10.255.240.6"
 	case "ci-gcp", "nav-ci-gcp":
 		return "https://10.255.240.7"
 	default:

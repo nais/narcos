@@ -54,7 +54,7 @@ func addCluster(config *clientcmdapi.Config, cluster gcp.Cluster, overwrite, ver
 		CertificateAuthorityData: ca,
 	}
 
-	isLegacy := cluster.Kind == gcp.KindLegacy || cluster.Name == "nav-ci-gcp" || cluster.Name == "nav-prod-gcp"
+	isLegacy := cluster.Kind == gcp.KindLegacy || cluster.Name == "nav-ci-gcp"
 
 	if isLegacy {
 		kubeconfigCluster.CertificateAuthorityData = nil
