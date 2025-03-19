@@ -1,4 +1,4 @@
-package cluster
+package kubeconfig
 
 import (
 	"context"
@@ -10,21 +10,25 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func kubeconfigCmd() *cli.Command {
+func Command() *cli.Command {
 	return &cli.Command{
 		Name:    "kubeconfig",
 		Aliases: []string{"kc"},
+		Usage:   "Create a kubeconfig file for connecting to available clusters",
 		Description: `Create a kubeconfig file for connecting to available clusters.
-This requires that you have the gcloud command line tool installed, configured and logged in using:
+This requires that you have the gcloud command line tool installed, configured and logged
+in using:
 gcloud auth login --update-adc`,
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
-				Name:  "overwrite",
-				Usage: "Will overwrite users, clusters, and contexts in your kubeconfig.",
+				Name:    "overwrite",
+				Usage:   "Will overwrite users, clusters, and contexts in your kubeconfig.",
+				Aliases: []string{"o"},
 			},
 			&cli.BoolFlag{
-				Name:  "clean",
-				Usage: "Recreate the entire kubeconfig.",
+				Name:    "clear",
+				Usage:   "Clear existing kubeconfig before writing new data",
+				Aliases: []string{"c"},
 			},
 			&cli.BoolFlag{
 				Name:    "verbose",
@@ -37,7 +41,7 @@ gcloud auth login --update-adc`,
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			overwrite := cmd.Bool("overwrite")
-			clean := cmd.Bool("clean")
+			clear := cmd.Bool("clear")
 			verbose := cmd.Bool("verbose")
 
 			fmt.Println("Getting clusters...")
@@ -57,16 +61,18 @@ gcloud auth login --update-adc`,
 				return err
 			}
 
-			hasSuffix := func(emails []string, suffix string) string {
-				for _, email := range emails {
-					if strings.HasSuffix(email, suffix) {
-						return email
-					}
+			var currentUser string
+			for _, email := range emails {
+				if strings.HasSuffix(email, "@nais.io") {
+					currentUser = email
 				}
-				panic("no user with suffix " + suffix + " found")
 			}
 
-			err = kubeconfig.CreateKubeconfig(hasSuffix(emails, "@nais.io"), clusters, overwrite, clean, verbose)
+			if currentUser == "" {
+				return fmt.Errorf("no user found with nais.io email")
+			}
+
+			err = kubeconfig.CreateKubeconfig(currentUser, clusters, overwrite, clear, verbose)
 			if err != nil {
 				return err
 			}

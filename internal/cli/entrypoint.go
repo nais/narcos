@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/nais/narcos/internal/cli/cluster"
 	"github.com/nais/narcos/internal/cli/jita"
+	"github.com/nais/narcos/internal/cli/kubeconfig"
 	"github.com/nais/narcos/internal/cli/tenant"
 	"github.com/urfave/cli/v3"
 )
@@ -19,7 +19,7 @@ func Run() {
 		Description: "Nais Administrator CLI",
 		Commands: []*cli.Command{
 			tenant.Command(),
-			cluster.Command(),
+			kubeconfig.Command(),
 			jita.Command(),
 		},
 		EnableShellCompletion: true,
