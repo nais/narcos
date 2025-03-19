@@ -11,11 +11,17 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
+var (
+	// Is set during build
+	version = "local"
+	commit  = "uncommited"
+)
+
 func Run() {
 	app := &cli.Command{
 		Name:        "narc",
 		Usage:       "Nais Administrator CLI",
-		Version:     "v0.1",
+		Version:     version + "-" + commit,
 		Description: "Nais Administrator CLI",
 		Commands: []*cli.Command{
 			tenant.Command(),
