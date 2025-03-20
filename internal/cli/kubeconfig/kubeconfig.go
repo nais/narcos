@@ -2,11 +2,9 @@ package kubeconfig
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
-	"github.com/nais/narcos/internal/gcp"
-	"github.com/nais/narcos/internal/kubeconfig"
+	"github.com/nais/cli/pkg/gcp"
+	"github.com/nais/cli/pkg/kubeconfig"
 	"github.com/urfave/cli/v3"
 )
 
@@ -37,45 +35,28 @@ gcloud auth login --update-adc`,
 		},
 		UseShortOptionHandling: true,
 		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
-			return ctx, gcp.ValidateUserLogin(ctx)
+			email, err := gcp.ValidateAndGetUserLogin(ctx, true)
+			if err != nil {
+				return ctx, err
+			}
+
+			cmd.Set("email", email)
+			return ctx, nil
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			overwrite := cmd.Bool("overwrite")
 			clear := cmd.Bool("clear")
+			email := cmd.String("email")
+			overwrite := cmd.Bool("overwrite")
 			verbose := cmd.Bool("verbose")
 
-			fmt.Println("Getting clusters...")
-			clusters, err := gcp.GetClusters(ctx)
-			if err != nil {
-				return err
-			}
-
-			if len(clusters) == 0 {
-				return fmt.Errorf("no clusters found")
-			}
-
-			fmt.Printf("Found %v clusters\n", len(clusters))
-
-			emails, err := gcp.GetUserEmails(ctx)
-			if err != nil {
-				return err
-			}
-
-			var currentUser string
-			for _, email := range emails {
-				if strings.HasSuffix(email, "@nais.io") {
-					currentUser = email
-				}
-			}
-
-			if currentUser == "" {
-				return fmt.Errorf("no user found with nais.io email")
-			}
-
-			err = kubeconfig.CreateKubeconfig(currentUser, clusters, overwrite, clear, verbose)
-			if err != nil {
-				return err
-			}
+			kubeconfig.CreateKubeconfig(ctx, email,
+				kubeconfig.WithOverwriteData(overwrite),
+				kubeconfig.WithFromScratch(clear),
+				kubeconfig.WithOnpremClusters(true),
+				kubeconfig.WithCiClusters(true),
+				kubeconfig.WithManagementClusters(true),
+				kubeconfig.WithPrefixedTenants(true),
+				kubeconfig.WithVerboseLogging(verbose))
 
 			return nil
 		},
