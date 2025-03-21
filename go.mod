@@ -3,7 +3,7 @@ module github.com/nais/narcos
 go 1.24.1
 
 require (
-	github.com/nais/cli v0.0.3-0.20250320105532-37c06c4232ea
+	github.com/nais/cli v0.1.0
 	github.com/nais/device v0.0.0-20231030073017-240e8a0234d9
 	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v3 v3.0.0-beta1
