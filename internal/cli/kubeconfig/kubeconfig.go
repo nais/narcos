@@ -34,20 +34,15 @@ gcloud auth login --update-adc`,
 			},
 		},
 		UseShortOptionHandling: true,
-		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
-			email, err := gcp.ValidateAndGetUserLogin(ctx, true)
-			if err != nil {
-				return ctx, err
-			}
-
-			cmd.Set("email", email)
-			return ctx, nil
-		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			clear := cmd.Bool("clear")
-			email := cmd.String("email")
 			overwrite := cmd.Bool("overwrite")
 			verbose := cmd.Bool("verbose")
+
+			email, err := gcp.ValidateAndGetUserLogin(ctx, true)
+			if err != nil {
+				return err
+			}
 
 			kubeconfig.CreateKubeconfig(ctx, email,
 				kubeconfig.WithOverwriteData(overwrite),
