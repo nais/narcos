@@ -44,7 +44,7 @@ gcloud auth login --update-adc`,
 				return err
 			}
 
-			kubeconfig.CreateKubeconfig(ctx, email,
+			err = kubeconfig.CreateKubeconfig(ctx, email,
 				kubeconfig.WithOverwriteData(overwrite),
 				kubeconfig.WithFromScratch(clear),
 				kubeconfig.WithOnpremClusters(true),
@@ -52,6 +52,9 @@ gcloud auth login --update-adc`,
 				kubeconfig.WithManagementClusters(true),
 				kubeconfig.WithPrefixedTenants(true),
 				kubeconfig.WithVerboseLogging(verbose))
+			if err != nil {
+				return err
+			}
 
 			return nil
 		},
