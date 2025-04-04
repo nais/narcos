@@ -10,7 +10,7 @@ tool (
 )
 
 require (
-	github.com/nais/cli v0.1.1-0.20250404114748-fdecba248e4a
+	github.com/nais/cli v0.1.1-0.20250404124513-1128509a2b91
 	github.com/nais/device v0.0.0-20231030073017-240e8a0234d9
 	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v3 v3.0.0-beta1
