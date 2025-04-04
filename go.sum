@@ -72,8 +72,8 @@ github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9G
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
-github.com/nais/cli v0.1.1-0.20250404124513-1128509a2b91 h1:0l/vL6ZsBsE9d0EDQlCPel17awhDZzVLFodpeLwTdbw=
-github.com/nais/cli v0.1.1-0.20250404124513-1128509a2b91/go.mod h1:hb9zayIS9gyw9AWdOwYua4oK67W47zZGaGJ7yMXoQJ0=
+github.com/nais/cli v0.1.1-0.20250404131644-5d38c0005b0e h1:9/+GB+sXAJHnydDg/I02M3O1xuThhAgw4fnMEmg2qSM=
+github.com/nais/cli v0.1.1-0.20250404131644-5d38c0005b0e/go.mod h1:LWMmCuZ5oE3UIHZV2NZgAIWA0/zeDbN3Fplv6jzaVOc=
 github.com/nais/device v0.0.0-20231030073017-240e8a0234d9 h1:nN6eRYMWUJIbvlDA4fIZNkGTgqnBT5ORxIHOonNAiPY=
 github.com/nais/device v0.0.0-20231030073017-240e8a0234d9/go.mod h1:nFrhQt0ZrCc72BGcfcETiI5zdwWT35AVnN7ATSaEV2Y=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
