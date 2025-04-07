@@ -18,12 +18,12 @@
               (
                 final: prev:
                 let
-                  version = "1.23.2";
+                  version = "1.24.2";
                   newerGoVersion = prev.go.overrideAttrs (old: {
                     inherit version;
                     src = prev.fetchurl {
                       url = "https://go.dev/dl/go${version}.src.tar.gz";
-                      hash = "sha256-NpMBYqk99BfZC9IsbhTa/0cFuqwrAkGO3aZxzfqc0H8=";
+                      hash = "sha256-ncd/+twW2DehvzLZnGJMtN8GR87nsRnt2eexvMBfLgA=";
                     };
                   });
                   nixpkgsVersion = prev.go.version;
@@ -43,7 +43,7 @@
               pname = "narc";
               inherit version;
               src = ./.;
-              vendorHash = "sha256-NIjVfusSegHCKuDkWBmmSxDAl6W8Hey6jUxSrLyBmno=";
+              vendorHash = "sha256-8ooqhZbmzcrdJ0m6nijgNoQs6r0HZ9G87ABoHErzgNA=";
             };
             default = narc;
           };
