@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"net/http"
@@ -24,6 +25,35 @@ func (folderID FolderID) entitlementsID() string {
 // The file has the same name as the tenant domain, suffixed with .json.
 type TenantMetadata struct {
 	NaisFolderID FolderID `json:"folderId"`
+}
+
+type Tenant struct {
+	Name string `xml:"Key"`
+}
+
+type bucket struct {
+	Name        string   `xml:"Name"`
+	Prefix      string   `xml:"Prefix"`
+	Marker      string   `xml:"Marker"`
+	IsTruncated bool     `xml:"IsTruncated"`
+	Contents    []Tenant `xml:"Contents"`
+}
+
+func FetchAllTenantNames() ([]Tenant, error) {
+	const url = "https://storage.googleapis.com/nais-tenant-data"
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("server returned %q", resp.Status)
+	}
+
+	decoder := xml.NewDecoder(resp.Body)
+	var bucket bucket
+	err = decoder.Decode(&bucket)
+
+	return bucket.Contents, err
 }
 
 func FetchTenantMetadata(tenantName string) (*TenantMetadata, error) {
