@@ -35,7 +35,7 @@ func subCommands() []*cli.Command {
 	return []*cli.Command{
 		{
 			Name:      "list",
-			Usage:     "List active and possible privilege elevations",
+			Usage:     "List active and potential privilege elevations",
 			UsageText: "narc jita list <TENANT>",
 			Flags: []cli.Flag{
 				&cli.BoolFlag{
@@ -53,53 +53,68 @@ func subCommands() []*cli.Command {
 				return ctx, err
 			},
 			Action: func(ctx context.Context, cmd *cli.Command) error {
-				if cmd.NArg() < 1 {
-					return fmt.Errorf("syntax: %s", cmd.UsageText)
-				}
 
 				userName, err := gcp.GCloudActiveUser(ctx)
 				if err != nil {
 					return err
 				}
 
-				tenantName := cmd.Args().Get(0)
-
-				tenantMetadata, err := gcp.FetchTenantMetadata(tenantName)
-				if err != nil {
-					return fmt.Errorf("GCP error fetching tenant metadata: %w", err)
-				}
-
-				entitlements, err := gcp.ListEntitlements(ctx, tenantMetadata.NaisFolderID)
-				if err != nil {
-					return fmt.Errorf("GCP error listing entitlements: %w", err)
-				}
-
-				fmt.Printf("Granted  Entitlement           Remaining  Max. duration\n")
-				fmt.Printf("----------------------------------------------------------\n")
-
-				for _, ent := range entitlements.Entitlements {
-					var hasGrants YesNoIcon
-					var timeRemaining string
-
-					fmt.Printf("Fetching...")
-
-					grants, err := ent.ListActiveGrants(ctx, userName)
+				var tenants []string
+				if cmd.NArg() == 0 {
+					tenantBuckets, err := gcp.FetchAllTenantNames()
 					if err != nil {
-						return err
-					} else if len(grants) > 0 {
-						hasGrants = true
-						timeRemaining = grants[0].TimeRemaining().String()
+						panic(fmt.Errorf("Failed parsing xml:, %v", err))
+					}
+					for _, tenant := range tenantBuckets {
+						if !strings.HasSuffix(tenant.Name, ".json") {
+							continue
+						}
+						tenants = append(tenants, strings.TrimSuffix(tenant.Name, ".json"))
+					}
+				} else {
+					for index := range cmd.NArg() {
+						tenants = append(tenants, cmd.Args().Get(index))
+					}
+				}
+
+				fmt.Printf("Tenant                    Entitlement           Granted  Remaining  Max. duration\n")
+				fmt.Printf("---------------------------------------------------------------------------------\n")
+				for _, tenantName := range tenants {
+					tenantMetadata, err := gcp.FetchTenantMetadata(tenantName)
+					if err != nil {
+						return fmt.Errorf("GCP error fetching tenant metadata: %w", err)
 					}
 
-					fmt.Printf("\r%-6s  %-20s  %-9s  %-9s\n",
-						hasGrants,
-						ent.ShortName(),
-						timeRemaining, // placeholder
-						ent.MaxDuration(),
-					)
-					if cmd.Bool("verbose") {
-						for _, role := range ent.Roles() {
-							fmt.Printf("           `- %s\n", role)
+					entitlements, err := gcp.ListEntitlements(ctx, tenantMetadata.NaisFolderID)
+					if err != nil {
+						return fmt.Errorf("GCP error listing entitlements: %w", err)
+					}
+
+					for _, ent := range entitlements.Entitlements {
+						var hasGrants YesNoIcon
+						var timeRemaining string
+
+						fmt.Printf("Fetching...")
+
+						grants, err := ent.ListActiveGrants(ctx, userName)
+						if err != nil {
+							return err
+						} else if len(grants) > 0 {
+							hasGrants = true
+							timeRemaining = grants[0].TimeRemaining().String()
+						}
+
+						fmt.Printf("\r%-24s  %-20s  %-6s  %-9s  %-9s\n",
+							tenantName,
+							ent.ShortName(),
+							hasGrants,
+							timeRemaining, // placeholder
+							ent.MaxDuration(),
+						)
+						if cmd.Bool("verbose") {
+							for _, role := range ent.Roles() {
+								fmt.Printf("           `- %s\n", role)
+							}
 						}
 					}
 				}
