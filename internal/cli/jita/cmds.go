@@ -82,6 +82,7 @@ func subCommands() []*cli.Command {
 				var wg sync.WaitGroup
 
 				for _, tenantName := range tenants {
+					defer wg.Done()
 					wg.Add(1)
 
 					go func() error {
@@ -120,7 +121,7 @@ func subCommands() []*cli.Command {
 								}
 							}
 						}
-						defer wg.Done()
+
 						return nil
 					}()
 				}
