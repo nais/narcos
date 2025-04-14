@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"os"
-	"strings"
-	"time"
-
 	"github.com/nais/narcos/internal/gcp"
 	"github.com/urfave/cli/v3"
+	"os"
+	"strings"
+	"sync"
+	"time"
 )
 
 func Command() *cli.Command {
@@ -79,45 +79,52 @@ func subCommands() []*cli.Command {
 
 				fmt.Printf("Tenant                    Entitlement           Granted  Remaining  Max. duration\n")
 				fmt.Printf("---------------------------------------------------------------------------------\n")
+				var wg sync.WaitGroup
+
 				for _, tenantName := range tenants {
-					tenantMetadata, err := gcp.FetchTenantMetadata(tenantName)
-					if err != nil {
-						return fmt.Errorf("GCP error fetching tenant metadata: %w", err)
-					}
+					wg.Add(1)
 
-					entitlements, err := gcp.ListEntitlements(ctx, tenantMetadata.NaisFolderID)
-					if err != nil {
-						return fmt.Errorf("GCP error listing entitlements: %w", err)
-					}
-
-					for _, ent := range entitlements.Entitlements {
-						var hasGrants YesNoIcon
-						var timeRemaining string
-
-						fmt.Printf("Fetching...")
-
-						grants, err := ent.ListActiveGrants(ctx, userName)
+					go func() error {
+						tenantMetadata, err := gcp.FetchTenantMetadata(tenantName)
 						if err != nil {
-							return err
-						} else if len(grants) > 0 {
-							hasGrants = true
-							timeRemaining = grants[0].TimeRemaining().String()
+							return fmt.Errorf("GCP error fetching tenant metadata: %w", err)
 						}
 
-						fmt.Printf("\r%-24s  %-20s  %-6s  %-9s  %-9s\n",
-							tenantName,
-							ent.ShortName(),
-							hasGrants,
-							timeRemaining, // placeholder
-							ent.MaxDuration(),
-						)
-						if cmd.Bool("verbose") {
-							for _, role := range ent.Roles() {
-								fmt.Printf("           `- %s\n", role)
+						entitlements, err := gcp.ListEntitlements(ctx, tenantMetadata.NaisFolderID)
+						if err != nil {
+							return fmt.Errorf("GCP error listing entitlements: %w", err)
+						}
+
+						for _, ent := range entitlements.Entitlements {
+							var hasGrants YesNoIcon
+							var timeRemaining string
+
+							grants, err := ent.ListActiveGrants(ctx, userName)
+							if err != nil {
+								return err
+							} else if len(grants) > 0 {
+								hasGrants = true
+								timeRemaining = grants[0].TimeRemaining().String()
+							}
+
+							fmt.Printf("\r%-24s  %-20s  %-6s  %-9s  %-9s\n",
+								tenantName,
+								ent.ShortName(),
+								hasGrants,
+								timeRemaining, // placeholder
+								ent.MaxDuration(),
+							)
+							if cmd.Bool("verbose") {
+								for _, role := range ent.Roles() {
+									fmt.Printf("           `- %s\n", role)
+								}
 							}
 						}
-					}
+						defer wg.Done()
+						return nil
+					}()
 				}
+				wg.Wait()
 
 				return nil
 			},
