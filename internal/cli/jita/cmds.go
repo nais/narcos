@@ -76,24 +76,29 @@ func subCommands() []*cli.Command {
 						tenants = append(tenants, cmd.Args().Get(index))
 					}
 				}
+				if cmd.Bool("verbose") {
+					fmt.Printf("Tenant                    Entitlement           Granted  Remaining  Max. duration\n")
+					fmt.Printf("---------------------------------------------------------------------------------\n")
+				}
 
-				fmt.Printf("Tenant                    Entitlement           Granted  Remaining  Max. duration\n")
-				fmt.Printf("---------------------------------------------------------------------------------\n")
 				var wg sync.WaitGroup
-
+				var errCh = make(chan error, len(tenants))
 				for _, tenantName := range tenants {
-					defer wg.Done()
 					wg.Add(1)
 
-					go func() error {
+					go func(tenant string) {
+						defer wg.Done()
+
 						tenantMetadata, err := gcp.FetchTenantMetadata(tenantName)
 						if err != nil {
-							return fmt.Errorf("GCP error fetching tenant metadata: %w", err)
+							errCh <- fmt.Errorf("GCP error fetching tenant metadata: %w", err)
+							return
 						}
 
 						entitlements, err := gcp.ListEntitlements(ctx, tenantMetadata.NaisFolderID)
 						if err != nil {
-							return fmt.Errorf("GCP error listing entitlements: %w", err)
+							errCh <- fmt.Errorf("GCP error listing entitlements: %w", err)
+							return
 						}
 
 						for _, ent := range entitlements.Entitlements {
@@ -102,7 +107,8 @@ func subCommands() []*cli.Command {
 
 							grants, err := ent.ListActiveGrants(ctx, userName)
 							if err != nil {
-								return err
+								errCh <- err
+								return
 							} else if len(grants) > 0 {
 								hasGrants = true
 								timeRemaining = grants[0].TimeRemaining().String()
@@ -112,7 +118,7 @@ func subCommands() []*cli.Command {
 								tenantName,
 								ent.ShortName(),
 								hasGrants,
-								timeRemaining, // placeholder
+								timeRemaining,
 								ent.MaxDuration(),
 							)
 							if cmd.Bool("verbose") {
@@ -122,12 +128,16 @@ func subCommands() []*cli.Command {
 							}
 						}
 
-						return nil
-					}()
+						return
+					}(tenantName)
 				}
 				wg.Wait()
-
-				return nil
+				select {
+				case err := <-errCh:
+					return err
+				default:
+					return nil
+				}
 			},
 		},
 		{
