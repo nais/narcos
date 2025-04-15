@@ -4,12 +4,14 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/nais/narcos/internal/gcp"
-	"github.com/urfave/cli/v3"
 	"os"
+	"sort"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/nais/narcos/internal/gcp"
+	"github.com/urfave/cli/v3"
 )
 
 func Command() *cli.Command {
@@ -76,60 +78,117 @@ func subCommands() []*cli.Command {
 						tenants = append(tenants, cmd.Args().Get(index))
 					}
 				}
-
-				fmt.Printf("Tenant                    Entitlement           Granted  Remaining  Max. duration\n")
-				fmt.Printf("---------------------------------------------------------------------------------\n")
+				if cmd.Bool("verbose") {
+					fmt.Printf("Tenant                    Entitlement           Granted  Remaining  Max. duration\n")
+					fmt.Printf("---------------------------------------------------------------------------------\n")
+				}
 				var wg sync.WaitGroup
+				var errCh = make(chan error, len(tenants))
+				defer close(errCh)
+
+				type OutputItem struct {
+					TenantName    string
+					EntShortName  string
+					HasGrants     YesNoIcon
+					TimeRemaining string
+					MaxDuration   time.Duration
+					Roles         []string
+					Verbose       bool
+				}
+
+				var outputMutex sync.Mutex
+				var outputs []OutputItem
 
 				for _, tenantName := range tenants {
-					defer wg.Done()
 					wg.Add(1)
 
-					go func() error {
+					go func(tenant string) {
+						defer wg.Done()
+
 						tenantMetadata, err := gcp.FetchTenantMetadata(tenantName)
 						if err != nil {
-							return fmt.Errorf("GCP error fetching tenant metadata: %w", err)
+							errCh <- fmt.Errorf("GCP error fetching tenant metadata: %w", err)
+							return
 						}
 
 						entitlements, err := gcp.ListEntitlements(ctx, tenantMetadata.NaisFolderID)
 						if err != nil {
-							return fmt.Errorf("GCP error listing entitlements: %w", err)
+							errCh <- fmt.Errorf("GCP error listing entitlements: %w", err)
+							return
 						}
+
+						var entGroup sync.WaitGroup
+						var tenantOutputs []OutputItem
 
 						for _, ent := range entitlements.Entitlements {
-							var hasGrants YesNoIcon
-							var timeRemaining string
+							entGroup.Add(1)
 
-							grants, err := ent.ListActiveGrants(ctx, userName)
-							if err != nil {
-								return err
-							} else if len(grants) > 0 {
-								hasGrants = true
-								timeRemaining = grants[0].TimeRemaining().String()
-							}
+							go func(userName string) {
+								defer entGroup.Done()
 
-							fmt.Printf("\r%-24s  %-20s  %-6s  %-9s  %-9s\n",
-								tenantName,
-								ent.ShortName(),
-								hasGrants,
-								timeRemaining, // placeholder
-								ent.MaxDuration(),
-							)
-							if cmd.Bool("verbose") {
-								for _, role := range ent.Roles() {
-									fmt.Printf("           `- %s\n", role)
+								output := OutputItem{
+									TenantName:   tenant,
+									EntShortName: ent.ShortName(),
+									MaxDuration:  ent.MaxDuration(),
+									Verbose:      cmd.Bool("verbose"),
 								}
-							}
-						}
 
-						return nil
-					}()
+								if output.Verbose {
+									output.Roles = ent.Roles()
+								}
+
+								grants, err := ent.ListActiveGrants(ctx, userName)
+								if err != nil {
+									errCh <- err
+									return
+								} else if len(grants) > 0 {
+									output.HasGrants = true
+									output.TimeRemaining = grants[0].TimeRemaining().String()
+								}
+
+								outputMutex.Lock()
+								tenantOutputs = append(tenantOutputs, output)
+								outputMutex.Unlock()
+							}(userName)
+						}
+						entGroup.Wait()
+
+						outputMutex.Lock()
+						outputs = append(outputs, tenantOutputs...)
+						outputMutex.Unlock()
+					}(tenantName)
 				}
 				wg.Wait()
 
-				return nil
-			},
-		},
+				select {
+				case err := <-errCh:
+					return err
+				default:
+					// sort on time and then sort on tenantname, active grants go on top.
+					sort.Slice(outputs, func(i, j int) bool {
+						if outputs[i].TimeRemaining != outputs[j].TimeRemaining {
+							return outputs[i].TimeRemaining > outputs[j].TimeRemaining
+						}
+						return outputs[i].TenantName < outputs[j].TenantName
+					})
+
+					for _, out := range outputs {
+						fmt.Printf("%-24s  %-20s  %-6s  %-9s  %-9s\n",
+							out.TenantName,
+							out.EntShortName,
+							out.HasGrants,
+							out.TimeRemaining,
+							out.MaxDuration,
+						)
+						if out.Verbose {
+							for _, role := range out.Roles {
+								fmt.Printf("           `- %s\n", role)
+							}
+						}
+					}
+					return nil
+				}
+			}},
 		{
 			Name:        "grant",
 			Usage:       "Elevate privileges for this tenant",
