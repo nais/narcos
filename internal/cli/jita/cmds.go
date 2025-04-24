@@ -104,7 +104,6 @@ func subCommands() []*cli.Command {
 
 					go func(tenant string) {
 						defer wg.Done()
-
 						tenantMetadata, err := gcp.FetchTenantMetadata(tenantName)
 						if err != nil {
 							errCh <- fmt.Errorf("GCP error fetching tenant metadata: %w", err)
@@ -117,14 +116,13 @@ func subCommands() []*cli.Command {
 							return
 						}
 
-						var entGroup sync.WaitGroup
+						var entitlementWaitGroup sync.WaitGroup
 						var tenantOutputs []OutputItem
 
 						for _, ent := range entitlements.Entitlements {
-							entGroup.Add(1)
-
+							entitlementWaitGroup.Add(1)
 							go func(userName string) {
-								defer entGroup.Done()
+								defer entitlementWaitGroup.Done()
 
 								output := OutputItem{
 									TenantName:   tenant,
@@ -136,10 +134,9 @@ func subCommands() []*cli.Command {
 								if output.Verbose {
 									output.Roles = ent.Roles()
 								}
-
 								grants, err := ent.ListActiveGrants(ctx, userName)
 								if err != nil {
-									errCh <- err
+									errCh <- fmt.Errorf("fetchin active grants: %w", err)
 									return
 								} else if len(grants) > 0 {
 									output.HasGrants = true
@@ -151,7 +148,7 @@ func subCommands() []*cli.Command {
 								outputMutex.Unlock()
 							}(userName)
 						}
-						entGroup.Wait()
+						entitlementWaitGroup.Wait()
 
 						outputMutex.Lock()
 						outputs = append(outputs, tenantOutputs...)
