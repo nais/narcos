@@ -303,6 +303,9 @@ func ListEntitlements(ctx context.Context, folderID FolderID) (*EntitlementsResp
 	if err != nil {
 		return nil, err
 	}
+	if len(data.Entitlements) == 0 {
+		return nil, fmt.Errorf("no entitlements found: ensure you are logged into gcloud")
+	}
 
 	return &data, nil
 }
