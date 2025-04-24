@@ -13,8 +13,8 @@ require (
 	github.com/nais/cli v0.1.1-0.20250407075756-3a12fa11abb7
 	github.com/nais/device v0.0.0-20231030073017-240e8a0234d9
 	github.com/stretchr/testify v1.10.0
-	github.com/urfave/cli/v3 v3.0.0-beta1
-	google.golang.org/grpc v1.71.0
+	github.com/urfave/cli/v3 v3.2.0
+	google.golang.org/grpc v1.72.0
 )
 
 require (
