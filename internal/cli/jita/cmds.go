@@ -55,7 +55,6 @@ func subCommands() []*cli.Command {
 				return ctx, err
 			},
 			Action: func(ctx context.Context, cmd *cli.Command) error {
-
 				userName, err := gcp.GCloudActiveUser(ctx)
 				if err != nil {
 					return err
@@ -65,7 +64,7 @@ func subCommands() []*cli.Command {
 				if cmd.NArg() == 0 {
 					tenantBuckets, err := gcp.FetchAllTenantNames()
 					if err != nil {
-						panic(fmt.Errorf("Failed parsing xml:, %v", err))
+						panic(fmt.Errorf("failed parsing xml:, %v", err))
 					}
 					for _, tenant := range tenantBuckets {
 						if !strings.HasSuffix(tenant.Name, ".json") {
@@ -83,7 +82,7 @@ func subCommands() []*cli.Command {
 					fmt.Printf("---------------------------------------------------------------------------------\n")
 				}
 				var wg sync.WaitGroup
-				var errCh = make(chan error, len(tenants))
+				errCh := make(chan error, len(tenants))
 				defer close(errCh)
 
 				type OutputItem struct {
@@ -185,7 +184,8 @@ func subCommands() []*cli.Command {
 					}
 					return nil
 				}
-			}},
+			},
+		},
 		{
 			Name:        "grant",
 			Usage:       "Elevate privileges for this tenant",

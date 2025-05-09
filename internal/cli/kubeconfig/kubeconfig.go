@@ -3,8 +3,8 @@ package kubeconfig
 import (
 	"context"
 
-	"github.com/nais/cli/pkg/gcp"
-	"github.com/nais/cli/pkg/kubeconfig"
+	"github.com/nais/narcos/internal/gcp"
+	"github.com/nais/narcos/internal/kubeconfig"
 	"github.com/urfave/cli/v3"
 )
 
