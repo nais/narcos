@@ -43,7 +43,7 @@
               pname = "narc";
               inherit version;
               src = ./.;
-              vendorHash = "sha256-8ooqhZbmzcrdJ0m6nijgNoQs6r0HZ9G87ABoHErzgNA=";
+              vendorHash = "sha256-4le9TQntv+E1S3kvUgGl3EnE7S+drO7Kockvk7tziTI=";
             };
             default = narc;
           };
