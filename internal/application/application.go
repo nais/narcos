@@ -6,15 +6,18 @@ import (
 	"os"
 
 	"github.com/nais/cli/pkg/cli"
+	jita "github.com/nais/narcos/internal/jita/command"
 	"github.com/nais/narcos/internal/root"
 )
 
 func newApplication(flags *root.Flags) *cli.Application {
 	return &cli.Application{
-		Name:        "narc",
-		Title:       "Narc CLI",
-		Version:     getVersion(),
-		SubCommands: []*cli.Command{},
+		Name:    "narc",
+		Title:   "Nais Administrator CLI",
+		Version: getVersion(),
+		SubCommands: []*cli.Command{
+			jita.Jita(flags),
+		},
 		StickyFlags: flags,
 	}
 }
