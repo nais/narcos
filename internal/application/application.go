@@ -8,6 +8,7 @@ import (
 	"github.com/nais/cli/pkg/cli"
 	jita "github.com/nais/narcos/internal/jita/command"
 	"github.com/nais/narcos/internal/root"
+	tenant "github.com/nais/narcos/internal/tenant/command"
 )
 
 func newApplication(flags *root.Flags) *cli.Application {
@@ -16,6 +17,7 @@ func newApplication(flags *root.Flags) *cli.Application {
 		Title:   "Nais Administrator CLI",
 		Version: getVersion(),
 		SubCommands: []*cli.Command{
+			tenant.Tenant(flags),
 			jita.Jita(flags),
 		},
 		StickyFlags: flags,
