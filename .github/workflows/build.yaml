@@ -126,6 +126,8 @@ jobs:
   # Used by GitHub to determine if all checks/builds have passed
   branch-protection-checkpoint:
     runs-on: ubuntu-latest
+    permissions:
+      contents: none
     needs:
       - checks
       - builds
