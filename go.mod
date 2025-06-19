@@ -12,11 +12,11 @@ tool (
 )
 
 require (
+	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/go-logr/logr v1.4.3
-	github.com/nais/cli v0.0.0-20250619135059-3dce721b2978
+	github.com/nais/cli/pkg/cli v0.0.0-20250619163159-9893f7521037
 	github.com/nais/device v0.0.0-20250520070746-1f0410aa36fe
 	github.com/stretchr/testify v1.10.0
-	github.com/urfave/cli/v3 v3.3.8
 	google.golang.org/api v0.238.0
 	google.golang.org/grpc v1.73.0
 	k8s.io/client-go v0.33.1

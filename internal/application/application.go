@@ -7,6 +7,7 @@ import (
 
 	"github.com/nais/cli/pkg/cli"
 	jita "github.com/nais/narcos/internal/jita/command"
+	kubeconfig "github.com/nais/narcos/internal/kubeconfig/command"
 	"github.com/nais/narcos/internal/root"
 	tenant "github.com/nais/narcos/internal/tenant/command"
 )
@@ -17,6 +18,7 @@ func newApplication(flags *root.Flags) *cli.Application {
 		Title:   "Nais Administrator CLI",
 		Version: getVersion(),
 		SubCommands: []*cli.Command{
+			kubeconfig.Kubeconfig(flags),
 			tenant.Tenant(flags),
 			jita.Jita(flags),
 		},
