@@ -137,7 +137,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
     needs:
       - set-version
       - builds
