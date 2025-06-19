@@ -13,7 +13,7 @@ tool (
 
 require (
 	github.com/go-logr/logr v1.4.3
-	github.com/nais/cli v0.0.0-20250619113126-6ff532c002ba
+	github.com/nais/cli v0.0.0-20250619135059-3dce721b2978
 	github.com/nais/device v0.0.0-20250520070746-1f0410aa36fe
 	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v3 v3.3.8
