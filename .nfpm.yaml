@@ -1,0 +1,38 @@
+# This is an example nfpm configuration file.
+# Make sure to check the documentation at https://nfpm.goreleaser.com
+#
+# The lines below are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/need to use them.
+# yaml-language-server: $schema=https://nfpm.goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+name: "narc"
+arch: "${ARCH}"
+platform: "linux"
+version: "${VERSION}"
+section: "default"
+priority: "extra"
+
+maintainer: Nav / Nais team
+description: |
+  Admin command-line interface for Nais
+vendor: "Nav / Nais team"
+homepage: "https://github.com/nais/narcos"
+license: "MIT"
+contents:
+  - src: ./completions/narc.bash
+    dst: /usr/share/bash-completion/completions/narc
+    file_info:
+      mode: 0644
+  - src: ./completions/narc.fish
+    dst: /usr/share/fish/vendor_completions.d/narc.fish
+    file_info:
+      mode: 0644
+  - src: ./completions/narc.zsh
+    dst: /usr/share/zsh/vendor-completions/_narc
+    file_info:
+      mode: 0644
+  - src: ./bin/narc
+    dst: /usr/bin/narc
+    file_info:
+      mode: 0755
