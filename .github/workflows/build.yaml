@@ -13,6 +13,8 @@ concurrency:
 jobs:
   set-version:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       version: ${{ steps.set-version.outputs.version }}
     steps:
@@ -45,6 +47,8 @@ jobs:
 
   builds:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         arch: [amd64, arm64]
@@ -91,6 +95,8 @@ jobs:
 
   package-deb:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         arch: [amd64, arm64]
@@ -130,6 +136,8 @@ jobs:
   release-github:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs:
       - set-version
       - builds
