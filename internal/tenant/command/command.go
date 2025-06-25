@@ -45,14 +45,10 @@ func list(parentFlags *flag.TenantFlags) *cli.Command {
 func set(parentFlags *flag.TenantFlags) *cli.Command {
 	flags := &flag.SetFlags{TenantFlags: parentFlags}
 	return &cli.Command{
-		Name:         "set",
-		Title:        "Set the active tenant.",
-		ValidateFunc: cli.ValidateExactArgs(1),
+		Name:  "set",
+		Title: "Set the active tenant.",
 		Args: []cli.Argument{
-			{
-				Name:     "tenant",
-				Required: true,
-			},
+			{Name: "tenant"},
 		},
 		Flags: flags,
 		RunFunc: func(ctx context.Context, out cli.Output, args []string) error {
