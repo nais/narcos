@@ -29,10 +29,7 @@ func list(parentFlags *flag.JitaFlags) *cli.Command {
 		Title: "List active and potential privilege elevations",
 		Flags: flags,
 		Args: []cli.Argument{
-			{
-				Name:       "tenant",
-				Repeatable: true,
-			},
+			{Name: "tenant", Repeatable: true},
 		},
 		RunFunc: func(ctx context.Context, out cli.Output, args []string) error {
 			return jita.List(ctx, flags, out, args)
@@ -53,14 +50,8 @@ func grant(parentFlags *flag.JitaFlags) *cli.Command {
 		`),
 		Flags: flags,
 		Args: []cli.Argument{
-			{
-				Name:     "tenant",
-				Required: true,
-			},
-			{
-				Name:     "entitlement",
-				Required: true,
-			},
+			{Name: "tenant"},
+			{Name: "entitlement"},
 		},
 		RunFunc: func(ctx context.Context, out cli.Output, args []string) error {
 			return jita.Grant(ctx, flags, out, args)

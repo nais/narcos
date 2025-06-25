@@ -10,13 +10,14 @@ import (
 	kubeconfig "github.com/nais/narcos/internal/kubeconfig/command"
 	"github.com/nais/narcos/internal/root"
 	tenant "github.com/nais/narcos/internal/tenant/command"
+	"github.com/nais/narcos/internal/version"
 )
 
 func newApplication(flags *root.Flags) *cli.Application {
 	return &cli.Application{
 		Name:    "narc",
 		Title:   "Nais Administrator CLI",
-		Version: getVersion(),
+		Version: version.Version,
 		SubCommands: []*cli.Command{
 			kubeconfig.Kubeconfig(flags),
 			tenant.Tenant(flags),
