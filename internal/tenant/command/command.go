@@ -3,6 +3,8 @@ package command
 import (
 	"context"
 	"fmt"
+	"slices"
+	"strings"
 
 	"github.com/nais/cli/pkg/cli"
 	"github.com/nais/narcos/internal/naisdevice"
@@ -49,6 +51,30 @@ func set(parentFlags *flag.TenantFlags) *cli.Command {
 		Title: "Set the active tenant.",
 		Args: []cli.Argument{
 			{Name: "tenant"},
+		},
+		AutoCompleteFunc: func(ctx context.Context, args []string, toComplete string) ([]string, string) {
+			if len(args) >= 1 {
+				return nil, ""
+			}
+
+			tenants, err := naisdevice.ListTenants(ctx)
+			if err != nil {
+				return nil, "Unable to list tenants for autocomplete."
+			}
+
+			return tenants, "Choose the tenant to set as active."
+		},
+		ValidateFunc: func(ctx context.Context, args []string) error {
+			tenants, err := naisdevice.ListTenants(ctx)
+			if err != nil {
+				return err
+			}
+
+			if !slices.Contains(tenants, args[0]) {
+				return cli.Errorf("Unknown tenant %q. Valid tenants: %s", args[0], strings.Join(tenants, ", "))
+			}
+
+			return nil
 		},
 		Flags: flags,
 		RunFunc: func(ctx context.Context, out cli.Output, args []string) error {
