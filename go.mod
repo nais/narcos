@@ -14,7 +14,7 @@ tool (
 require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/go-logr/logr v1.4.3
-	github.com/nais/cli/pkg/cli v0.0.0-20250625080424-4184e4afa2c6
+	github.com/nais/cli/pkg/cli v0.0.0-20250626111509-599a7b279aa0
 	github.com/nais/device v0.0.0-20250520070746-1f0410aa36fe
 	github.com/stretchr/testify v1.10.0
 	google.golang.org/api v0.238.0
