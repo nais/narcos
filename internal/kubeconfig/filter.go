@@ -39,12 +39,6 @@ func WithOnpremClusters(include bool) FilterOption {
 	}
 }
 
-func WithExcludeClusters(exclude []string) FilterOption {
-	return func(options *filterOptions) {
-		options.excludeClusters = exclude
-	}
-}
-
 func WithOverwriteData(enabled bool) FilterOption {
 	return func(options *filterOptions) {
 		options.overwrite = enabled

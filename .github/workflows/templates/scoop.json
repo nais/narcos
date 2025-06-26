@@ -1,0 +1,18 @@
+{
+  "version": "__VERSION__",
+  "architecture": {
+    "64bit": {
+      "url": "https://github.com/nais/narcos/releases/download/__VERSION__/narc-cli___VERSION___windows_amd64.tar.gz",
+      "bin": ["narc.exe"],
+      "hash": "__SHA_WINDOWS_AMD64__"
+    },
+    "arm64": {
+      "url": "https://github.com/nais/narcos/releases/download/__VERSION__/narc-cli___VERSION___windows_arm64.tar.gz",
+      "bin": ["narc.exe"],
+      "hash": "__SHA_WINDOWS_ARM64__"
+    }
+  },
+  "homepage": "https://github.com/nais/narcos",
+  "license": "MIT",
+  "description": "Admin command-line interface for NAIS"
+}
