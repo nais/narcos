@@ -26,3 +26,5 @@ dist/
 
 .direnv
 result
+
+/completions
