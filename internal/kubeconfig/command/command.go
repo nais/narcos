@@ -4,16 +4,16 @@ import (
 	"context"
 
 	"github.com/MakeNowJust/heredoc/v2"
-	"github.com/nais/cli/pkg/cli"
+	"github.com/nais/naistrix"
 	"github.com/nais/narcos/internal/gcp"
 	"github.com/nais/narcos/internal/kubeconfig"
 	"github.com/nais/narcos/internal/kubeconfig/command/flag"
 	"github.com/nais/narcos/internal/root"
 )
 
-func Kubeconfig(parentFlags *root.Flags) *cli.Command {
+func Kubeconfig(parentFlags *root.Flags) *naistrix.Command {
 	flags := &flag.KubeconfigFlags{Flags: parentFlags}
-	return &cli.Command{
+	return &naistrix.Command{
 		Name:    "kubeconfig",
 		Aliases: []string{"kc"},
 		Title:   "Create a kubeconfig file for connecting to available clusters.",
@@ -23,7 +23,7 @@ func Kubeconfig(parentFlags *root.Flags) *cli.Command {
 			nais login
 		`),
 		Flags: flags,
-		RunFunc: func(ctx context.Context, out cli.Output, args []string) error {
+		RunFunc: func(ctx context.Context, out naistrix.Output, args []string) error {
 			email, err := gcp.ValidateAndGetUserLogin(ctx, true)
 			if err != nil {
 				return err

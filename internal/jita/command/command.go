@@ -4,42 +4,42 @@ import (
 	"context"
 
 	"github.com/MakeNowJust/heredoc/v2"
-	"github.com/nais/cli/pkg/cli"
+	"github.com/nais/naistrix"
 	"github.com/nais/narcos/internal/jita"
 	"github.com/nais/narcos/internal/jita/command/flag"
 	"github.com/nais/narcos/internal/root"
 )
 
-func Jita(rootFlags *root.Flags) *cli.Command {
+func Jita(rootFlags *root.Flags) *naistrix.Command {
 	jitaFlags := &flag.JitaFlags{Flags: rootFlags}
-	return &cli.Command{
+	return &naistrix.Command{
 		Name:  "jita",
 		Title: "Just-in-time privilege elevation for tenants.",
-		SubCommands: []*cli.Command{
+		SubCommands: []*naistrix.Command{
 			list(jitaFlags),
 			grant(jitaFlags),
 		},
 	}
 }
 
-func list(parentFlags *flag.JitaFlags) *cli.Command {
+func list(parentFlags *flag.JitaFlags) *naistrix.Command {
 	flags := &flag.ListFlags{JitaFlags: parentFlags}
-	return &cli.Command{
+	return &naistrix.Command{
 		Name:  "list",
 		Title: "List active and potential privilege elevations",
 		Flags: flags,
-		Args: []cli.Argument{
+		Args: []naistrix.Argument{
 			{Name: "tenant", Repeatable: true},
 		},
-		RunFunc: func(ctx context.Context, out cli.Output, args []string) error {
+		RunFunc: func(ctx context.Context, out naistrix.Output, args []string) error {
 			return jita.List(ctx, flags, out, args)
 		},
 	}
 }
 
-func grant(parentFlags *flag.JitaFlags) *cli.Command {
+func grant(parentFlags *flag.JitaFlags) *naistrix.Command {
 	flags := &flag.GrantFlags{JitaFlags: parentFlags}
-	return &cli.Command{
+	return &naistrix.Command{
 		Name:  "grant",
 		Title: "Elevate privileges for this tenant.",
 		Description: heredoc.Doc(`
@@ -49,11 +49,11 @@ func grant(parentFlags *flag.JitaFlags) *cli.Command {
 			REASON is a human-readable description of why you need to elevate privileges.
 		`),
 		Flags: flags,
-		Args: []cli.Argument{
+		Args: []naistrix.Argument{
 			{Name: "tenant"},
 			{Name: "entitlement"},
 		},
-		RunFunc: func(ctx context.Context, out cli.Output, args []string) error {
+		RunFunc: func(ctx context.Context, out naistrix.Output, args []string) error {
 			return jita.Grant(ctx, flags, out, args)
 		},
 	}

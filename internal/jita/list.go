@@ -8,12 +8,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nais/cli/pkg/cli"
+	"github.com/nais/naistrix"
 	"github.com/nais/narcos/internal/gcp"
 	"github.com/nais/narcos/internal/jita/command/flag"
 )
 
-func List(ctx context.Context, flags *flag.ListFlags, out cli.Output, args []string) error {
+func List(ctx context.Context, flags *flag.ListFlags, out naistrix.Output, args []string) error {
 	userName, err := gcp.GCloudActiveUser(ctx)
 	if err != nil {
 		return err
