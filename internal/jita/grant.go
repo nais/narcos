@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nais/cli/pkg/cli"
+	"github.com/nais/naistrix"
 	"github.com/nais/narcos/internal/gcp"
 	"github.com/nais/narcos/internal/jita/command/flag"
 )
 
-func Grant(ctx context.Context, flags *flag.GrantFlags, out cli.Output, args []string) error {
+func Grant(ctx context.Context, flags *flag.GrantFlags, out naistrix.Output, args []string) error {
 	entitlementName := args[0]
 	tenantName := args[1]
 

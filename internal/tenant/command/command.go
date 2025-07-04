@@ -6,18 +6,18 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/nais/cli/pkg/cli"
+	"github.com/nais/naistrix"
 	"github.com/nais/narcos/internal/naisdevice"
 	"github.com/nais/narcos/internal/root"
 	"github.com/nais/narcos/internal/tenant/command/flag"
 )
 
-func Tenant(rootFlags *root.Flags) *cli.Command {
+func Tenant(rootFlags *root.Flags) *naistrix.Command {
 	tenantFlags := &flag.TenantFlags{Flags: rootFlags}
-	return &cli.Command{
+	return &naistrix.Command{
 		Name:  "tenant",
 		Title: "Work with different Nais tenants.",
-		SubCommands: []*cli.Command{
+		SubCommands: []*naistrix.Command{
 			list(tenantFlags),
 			set(tenantFlags),
 			get(tenantFlags),
@@ -25,13 +25,13 @@ func Tenant(rootFlags *root.Flags) *cli.Command {
 	}
 }
 
-func list(parentFlags *flag.TenantFlags) *cli.Command {
+func list(parentFlags *flag.TenantFlags) *naistrix.Command {
 	flags := &flag.ListFlags{TenantFlags: parentFlags}
-	return &cli.Command{
+	return &naistrix.Command{
 		Name:  "list",
 		Title: "List tenants.",
 		Flags: flags,
-		RunFunc: func(ctx context.Context, out cli.Output, args []string) error {
+		RunFunc: func(ctx context.Context, out naistrix.Output, args []string) error {
 			tenants, err := naisdevice.ListTenants(ctx)
 			if err != nil {
 				return err
@@ -44,12 +44,12 @@ func list(parentFlags *flag.TenantFlags) *cli.Command {
 	}
 }
 
-func set(parentFlags *flag.TenantFlags) *cli.Command {
+func set(parentFlags *flag.TenantFlags) *naistrix.Command {
 	flags := &flag.SetFlags{TenantFlags: parentFlags}
-	return &cli.Command{
+	return &naistrix.Command{
 		Name:  "set",
 		Title: "Set the active tenant.",
-		Args: []cli.Argument{
+		Args: []naistrix.Argument{
 			{Name: "tenant"},
 		},
 		AutoCompleteFunc: func(ctx context.Context, args []string, toComplete string) ([]string, string) {
@@ -71,13 +71,13 @@ func set(parentFlags *flag.TenantFlags) *cli.Command {
 			}
 
 			if !slices.Contains(tenants, args[0]) {
-				return cli.Errorf("Unknown tenant %q. Valid tenants: %s", args[0], strings.Join(tenants, ", "))
+				return naistrix.Errorf("Unknown tenant %q. Valid tenants: %s", args[0], strings.Join(tenants, ", "))
 			}
 
 			return nil
 		},
 		Flags: flags,
-		RunFunc: func(ctx context.Context, out cli.Output, args []string) error {
+		RunFunc: func(ctx context.Context, out naistrix.Output, args []string) error {
 			if err := naisdevice.SetTenant(ctx, args[0]); err != nil {
 				return err
 			}
@@ -88,13 +88,13 @@ func set(parentFlags *flag.TenantFlags) *cli.Command {
 	}
 }
 
-func get(parentFlags *flag.TenantFlags) *cli.Command {
+func get(parentFlags *flag.TenantFlags) *naistrix.Command {
 	flags := &flag.GetFlags{TenantFlags: parentFlags}
-	return &cli.Command{
+	return &naistrix.Command{
 		Name:  "get",
 		Title: "Get the active tenant.",
 		Flags: flags,
-		RunFunc: func(ctx context.Context, out cli.Output, args []string) error {
+		RunFunc: func(ctx context.Context, out naistrix.Output, args []string) error {
 			tenant, err := naisdevice.GetTenant(ctx)
 			if err != nil {
 				return err
