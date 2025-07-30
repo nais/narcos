@@ -164,6 +164,8 @@ jobs:
   branch-protection-checkpoint:
     name: Branch protection checkpoint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: [checks, builds, package-deb]
     steps:
       - name: Output status message
