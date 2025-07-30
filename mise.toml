@@ -55,6 +55,7 @@ description = "Build the Narc CLI binary"
 wait_for = ['fmt']
 run = """
 go build \
+  -ldflags "-s -w -X github.com/nais/narcos/internal/version.Version=${VERSION:-local}" \
   -o bin/narc ./
 """
 
