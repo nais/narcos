@@ -210,16 +210,16 @@ jobs:
       - name: Create GitHub release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ needs.release-version.outputs.version }}
+          tag_name: ${{ needs.release-info.outputs.version }}
           body: ${{ needs.release-info.outputs.changelog }}
           prerelease: false
           files: |
-            archive-linux-amd64/narc-cli_${{ needs.release-version.outputs.version }}_linux_amd64.tar.gz
-            archive-linux-arm64/narc-cli_${{ needs.release-version.outputs.version }}_linux_arm64.tar.gz
-            archive-darwin-amd64/narc-cli_${{ needs.release-version.outputs.version }}_darwin_amd64.tar.gz
-            archive-darwin-arm64/narc-cli_${{ needs.release-version.outputs.version }}_darwin_arm64.tar.gz
-            deb-amd64/narc-cli_${{ needs.release-version.outputs.version }}_amd64.deb
-            deb-arm64/narc-cli_${{ needs.release-version.outputs.version }}_arm64.deb
+            archive-linux-amd64/narc-cli_${{ needs.release-info.outputs.version }}_linux_amd64.tar.gz
+            archive-linux-arm64/narc-cli_${{ needs.release-info.outputs.version }}_linux_arm64.tar.gz
+            archive-darwin-amd64/narc-cli_${{ needs.release-info.outputs.version }}_darwin_amd64.tar.gz
+            archive-darwin-arm64/narc-cli_${{ needs.release-info.outputs.version }}_darwin_arm64.tar.gz
+            deb-amd64/narc-cli_${{ needs.release-info.outputs.version }}_amd64.deb
+            deb-arm64/narc-cli_${{ needs.release-info.outputs.version }}_arm64.deb
             checksums.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
