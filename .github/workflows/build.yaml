@@ -94,7 +94,7 @@ jobs:
     strategy:
       matrix:
         arch: [amd64, arm64]
-        os: [windows, linux, darwin]
+        os: [linux, darwin]
     name: Generate binary for ${{ matrix.os }}-${{ matrix.arch }}
     needs: [release-info]
     steps:
@@ -114,18 +114,6 @@ jobs:
           mise run build
 
           binary="narc"
-          if [[ "${{ matrix.os }}" == "windows" ]]; then
-            binary="narc.exe"
-            mv "bin/narc" "bin/$binary"
-
-            if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-              sudo apt-get update; sudo apt-get install --yes osslsigncode
-              echo "${{ secrets.SIGN_CERT }}" > nais.crt
-              echo "${{ secrets.SIGN_KEY }}" > nais.key
-              osslsigncode sign -certs nais.crt -key nais.key -n "narc-cli" -i "https://doc.nais.io/cli" -verbose -in "bin/$binary" -out "bin/narc-signed"
-              mv "bin/narc-signed" "bin/$binary"
-            fi
-          fi
 
           tar -zcf "narc-cli_${{ needs.release-info.outputs.version }}_${{ matrix.os }}_${{ matrix.arch }}.tar.gz" ./completions -C bin/ "$binary"
       - name: Upload artifact
@@ -203,13 +191,13 @@ jobs:
             echo "$hash  $file" >> checksums.txt
 
             # Generate hashes for archives
-            for os in linux darwin windows; do
+            for os in linux darwin; do
               file="narc-cli_${version}_${os}_${arch}.tar.gz"
               hash16="$(nix-hash --type sha256 --flat "./archive-${os}-${arch}/${file}")"
               hash32="$(nix-hash --type sha256 --flat --base32 "./archive-${os}-${arch}/${file}")"
               echo "$hash16  $file" >> checksums.txt
 
-              # This is used by the external release jobs (nur, homebrew, scoop)
+              # This is used by the external release jobs (nur, homebrew)
               jq --arg os "$os" --arg arch "$arch" --arg encoding "base16" --arg hash "$hash16" '.[$os][$arch][$encoding] = $hash' hashes.json > new_hashes.json; mv {new_,}hashes.json
               jq --arg os "$os" --arg arch "$arch" --arg encoding "base32" --arg hash "$hash32" '.[$os][$arch][$encoding] = $hash' hashes.json > new_hashes.json; mv {new_,}hashes.json
             done
@@ -230,8 +218,6 @@ jobs:
             archive-linux-arm64/narc-cli_${{ needs.release-version.outputs.version }}_linux_arm64.tar.gz
             archive-darwin-amd64/narc-cli_${{ needs.release-version.outputs.version }}_darwin_amd64.tar.gz
             archive-darwin-arm64/narc-cli_${{ needs.release-version.outputs.version }}_darwin_arm64.tar.gz
-            archive-windows-amd64/narc-cli_${{ needs.release-version.outputs.version }}_windows_amd64.tar.gz
-            archive-windows-arm64/narc-cli_${{ needs.release-version.outputs.version }}_windows_arm64.tar.gz
             deb-amd64/narc-cli_${{ needs.release-version.outputs.version }}_amd64.deb
             deb-arm64/narc-cli_${{ needs.release-version.outputs.version }}_arm64.deb
             checksums.txt
@@ -286,9 +272,6 @@ jobs:
           - template: nur.nix
             repo: nais/nur
             file: pkgs/narc-cli/default.nix
-          - template: scoop.json
-            repo: nais/scoop-bucket
-            file: narc-cli.json
           - template: homebrew.rb
             repo: nais/homebrew-tap
             file: Formula/narc.rb
@@ -317,8 +300,6 @@ jobs:
           mkdir -p "$(dirname "${{ matrix.target.file }}")"
           sed \
             -e "s/__VERSION__/${{ needs.release-info.outputs.version }}/g" \
-            -e "s/__SHA_WINDOWS_AMD64__/$(jq -r '.windows.amd64.base16' ../hashes.json)/g" \
-            -e "s/__SHA_WINDOWS_ARM64__/$(jq -r '.windows.arm64.base16' ../hashes.json)/g" \
             -e "s/__SHA_DARWIN_AMD64__/$(jq -r '.darwin.amd64.base16' ../hashes.json)/g" \
             -e "s/__SHA_DARWIN_ARM64__/$(jq -r '.darwin.arm64.base16' ../hashes.json)/g" \
             -e "s/__SHA_LINUX_AMD64__/$(jq -r '.linux.amd64.base16' ../hashes.json)/g" \
