@@ -173,7 +173,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Run Nix Installer
-        uses: DeterminateSystems/nix-installer-action@v17
+        uses: DeterminateSystems/nix-installer-action@v19
       - name: Create tag
         run: git tag ${{ needs.release-info.outputs.version }}
       - name: Download artifacts
@@ -208,7 +208,7 @@ jobs:
           name: hashes-json
           path: hashes.json
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.release-info.outputs.version }}
           body: ${{ needs.release-info.outputs.changelog }}
