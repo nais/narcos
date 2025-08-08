@@ -17,9 +17,9 @@ require (
 	github.com/nais/device v0.0.0-20250703090236-08bd8b276591
 	github.com/nais/naistrix v0.3.1
 	github.com/stretchr/testify v1.10.0
-	google.golang.org/api v0.240.0
-	google.golang.org/grpc v1.73.0
-	k8s.io/client-go v0.33.2
+	google.golang.org/api v0.246.0
+	google.golang.org/grpc v1.74.2
+	k8s.io/client-go v0.33.3
 	k8s.io/klog/v2 v2.130.1
 )
 
@@ -29,7 +29,7 @@ require (
 	atomicgo.dev/schedule v0.1.0 // indirect
 	cloud.google.com/go v0.121.2 // indirect
 	cloud.google.com/go/ai v0.12.1 // indirect
-	cloud.google.com/go/auth v0.16.2 // indirect
+	cloud.google.com/go/auth v0.16.3 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	cloud.google.com/go/compute/metadata v0.7.0 // indirect
 	cloud.google.com/go/longrunning v0.6.7 // indirect
@@ -68,7 +68,7 @@ require (
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
-	github.com/googleapis/gax-go/v2 v2.14.2 // indirect
+	github.com/googleapis/gax-go/v2 v2.15.0 // indirect
 	github.com/gookit/color v1.5.4 // indirect
 	github.com/goreleaser/chglog v0.7.0 // indirect
 	github.com/goreleaser/fileglob v1.3.0 // indirect
@@ -135,13 +135,13 @@ require (
 	golang.org/x/tools v0.35.0 // indirect
 	golang.org/x/vuln v1.1.4 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250603155806-513f23925822 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250603155806-513f23925822 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250728155136-f173205681a0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.6.1 // indirect
-	k8s.io/apimachinery v0.33.2 // indirect
+	k8s.io/apimachinery v0.33.3 // indirect
 	k8s.io/kube-openapi v0.0.0-20250610211856-8b98d1ed966a // indirect
 	k8s.io/utils v0.0.0-20250604170112-4c0f3b243397 // indirect
 	mvdan.cc/gofumpt v0.8.0 // indirect
