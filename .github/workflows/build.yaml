@@ -173,11 +173,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Run Nix Installer
-        uses: DeterminateSystems/nix-installer-action@v17
+        uses: DeterminateSystems/nix-installer-action@v19
       - name: Create tag
         run: git tag ${{ needs.release-info.outputs.version }}
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
       - name: Generate hashes
         id: hashes
         run: |
@@ -208,7 +208,7 @@ jobs:
           name: hashes-json
           path: hashes.json
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.release-info.outputs.version }}
           body: ${{ needs.release-info.outputs.changelog }}
@@ -248,11 +248,11 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
       - name: Download arm64 deb artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: deb-arm64
       - name: Download amd64 deb artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: deb-amd64
       - name: Upload files to GAR
@@ -290,7 +290,7 @@ jobs:
           app-id: "${{ secrets.NAIS_APP_ID }}"
           repo: ${{ matrix.target.repo }}
       - name: Download hashes
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: hashes-json
       - name: Generate manifest
