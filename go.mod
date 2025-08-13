@@ -17,7 +17,7 @@ require (
 	github.com/nais/device v0.0.0-20250703090236-08bd8b276591
 	github.com/nais/naistrix v0.3.1
 	github.com/stretchr/testify v1.10.0
-	google.golang.org/api v0.246.0
+	google.golang.org/api v0.247.0
 	google.golang.org/grpc v1.74.2
 	k8s.io/client-go v0.33.3
 	k8s.io/klog/v2 v2.130.1
