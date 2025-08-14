@@ -43,18 +43,18 @@ func grant(parentFlags *flag.JitaFlags) *naistrix.Command {
 		Name:  "grant",
 		Title: "Elevate privileges for this tenant.",
 		Description: heredoc.Doc(`
-			TENANT is one of the tenants given by "narc tenant list"
 			ENTITLEMENT is one the entitlements given by "narc jita list TENANT"
+			TENANT is one of the tenants given by "narc tenant list"
 			DURATION is the amount of time you need privileges for, given as "0h0m"
 			REASON is a human-readable description of why you need to elevate privileges.
 		`),
 		Flags: flags,
 		Args: []naistrix.Argument{
-			{Name: "tenant"},
 			{Name: "entitlement"},
+			{Name: "tenant"},
 		},
 		RunFunc: func(ctx context.Context, out naistrix.Output, args []string) error {
-			return jita.Grant(ctx, flags, out, args)
+			return jita.Grant(ctx, flags, args[0], args[1])
 		},
 	}
 }

@@ -8,15 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nais/naistrix"
 	"github.com/nais/narcos/internal/gcp"
 	"github.com/nais/narcos/internal/jita/command/flag"
 )
 
-func Grant(ctx context.Context, flags *flag.GrantFlags, out naistrix.Output, args []string) error {
-	entitlementName := args[0]
-	tenantName := args[1]
-
+func Grant(ctx context.Context, flags *flag.GrantFlags, entitlementName, tenantName string) error {
 	/////
 	// Fetch metadata from Google
 	tenantMetadata, err := gcp.FetchTenantMetadata(tenantName)
