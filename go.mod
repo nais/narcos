@@ -15,11 +15,11 @@ require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/go-logr/logr v1.4.3
 	github.com/nais/device v0.0.0-20250703090236-08bd8b276591
-	github.com/nais/naistrix v0.3.1
+	github.com/nais/naistrix v0.4.0
 	github.com/stretchr/testify v1.10.0
-	google.golang.org/api v0.246.0
+	google.golang.org/api v0.247.0
 	google.golang.org/grpc v1.74.2
-	k8s.io/client-go v0.33.3
+	k8s.io/client-go v0.33.4
 	k8s.io/klog/v2 v2.130.1
 )
 
@@ -36,6 +36,7 @@ require (
 	dario.cat/mergo v1.0.2 // indirect
 	github.com/AlekSi/pointer v1.2.0 // indirect
 	github.com/BurntSushi/toml v1.5.0 // indirect
+	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect
 	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
@@ -135,13 +136,13 @@ require (
 	golang.org/x/tools v0.36.0 // indirect
 	golang.org/x/vuln v1.1.4 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250804133106-a7a43d27e69b // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250804133106-a7a43d27e69b // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250811230008-5f3141c8851a // indirect
 	google.golang.org/protobuf v1.36.7 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.6.1 // indirect
-	k8s.io/apimachinery v0.33.3 // indirect
+	k8s.io/apimachinery v0.33.4 // indirect
 	k8s.io/kube-openapi v0.0.0-20250610211856-8b98d1ed966a // indirect
 	k8s.io/utils v0.0.0-20250604170112-4c0f3b243397 // indirect
 	mvdan.cc/gofumpt v0.8.0 // indirect
