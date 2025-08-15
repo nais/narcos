@@ -23,7 +23,7 @@ jobs:
       changelog: ${{ steps.generate.outputs.changelog }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Install tooling
@@ -79,7 +79,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install tooling
         uses: jdx/mise-action@v2
         with:
@@ -99,7 +99,7 @@ jobs:
     needs: [release-info]
     steps:
       - name: Checkout latest code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install tooling
         uses: jdx/mise-action@v2
         with:
@@ -133,7 +133,7 @@ jobs:
     needs: [release-info]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install tooling
         uses: jdx/mise-action@v2
         with:
@@ -171,7 +171,7 @@ jobs:
     needs: [release-info, builds, package-deb, checks]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Run Nix Installer
         uses: DeterminateSystems/nix-installer-action@v19
       - name: Create tag
@@ -237,7 +237,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Authenticate to Google Cloud
         id: auth
         uses: google-github-actions/auth@v2
@@ -281,7 +281,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Generate installation access token
         uses: navikt/github-app-token-generator@v1
         id: token
