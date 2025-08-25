@@ -15,10 +15,10 @@ require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/go-logr/logr v1.4.3
 	github.com/nais/device v0.0.0-20250703090236-08bd8b276591
-	github.com/nais/naistrix v0.4.0
-	github.com/stretchr/testify v1.10.0
-	google.golang.org/api v0.247.0
-	google.golang.org/grpc v1.74.2
+	github.com/nais/naistrix v0.4.1
+	github.com/stretchr/testify v1.11.0
+	google.golang.org/api v0.248.0
+	google.golang.org/grpc v1.75.0
 	k8s.io/client-go v0.33.4
 	k8s.io/klog/v2 v2.130.1
 )
@@ -29,7 +29,7 @@ require (
 	atomicgo.dev/schedule v0.1.0 // indirect
 	cloud.google.com/go v0.121.4 // indirect
 	cloud.google.com/go/ai v0.12.1 // indirect
-	cloud.google.com/go/auth v0.16.4 // indirect
+	cloud.google.com/go/auth v0.16.5 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	cloud.google.com/go/compute/metadata v0.8.0 // indirect
 	cloud.google.com/go/longrunning v0.6.7 // indirect
@@ -136,7 +136,7 @@ require (
 	golang.org/x/tools v0.36.0 // indirect
 	golang.org/x/vuln v1.1.4 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250804133106-a7a43d27e69b // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250811230008-5f3141c8851a // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250818200422-3122310a409c // indirect
 	google.golang.org/protobuf v1.36.7 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
