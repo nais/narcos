@@ -11,7 +11,7 @@ import (
 )
 
 func Jita(rootFlags *root.Flags) *naistrix.Command {
-	jitaFlags := &flag.JitaFlags{Flags: rootFlags}
+	jitaFlags := &flag.Jita{Flags: rootFlags}
 	return &naistrix.Command{
 		Name:  "jita",
 		Title: "Just-in-time privilege elevation for tenants.",
@@ -22,23 +22,21 @@ func Jita(rootFlags *root.Flags) *naistrix.Command {
 	}
 }
 
-func list(parentFlags *flag.JitaFlags) *naistrix.Command {
-	flags := &flag.ListFlags{JitaFlags: parentFlags}
+func list(parentFlags *flag.Jita) *naistrix.Command {
+	flags := &flag.List{Jita: parentFlags}
 	return &naistrix.Command{
-		Name:  "list",
-		Title: "List active and potential privilege elevations",
-		Flags: flags,
-		Args: []naistrix.Argument{
-			{Name: "tenant", Repeatable: true},
-		},
-		RunFunc: func(ctx context.Context, out naistrix.Output, args []string) error {
-			return jita.List(ctx, flags, out, args)
+		Name:        "list",
+		Title:       "List active and potential privilege elevations",
+		Description: "To include the roles associated with each entitlement in the output, use verbose (-v) mode.",
+		Flags:       flags,
+		RunFunc: func(ctx context.Context, out naistrix.Output, _ []string) error {
+			return jita.List(ctx, flags, out)
 		},
 	}
 }
 
-func grant(parentFlags *flag.JitaFlags) *naistrix.Command {
-	flags := &flag.GrantFlags{JitaFlags: parentFlags}
+func grant(parentFlags *flag.Jita) *naistrix.Command {
+	flags := &flag.Grant{Jita: parentFlags}
 	return &naistrix.Command{
 		Name:  "grant",
 		Title: "Elevate privileges for this tenant.",

@@ -12,7 +12,7 @@ import (
 	"github.com/nais/narcos/internal/jita/command/flag"
 )
 
-func Grant(ctx context.Context, flags *flag.GrantFlags, entitlementName, tenantName string) error {
+func Grant(ctx context.Context, flags *flag.Grant, entitlementName, tenantName string) error {
 	/////
 	// Fetch metadata from Google
 	tenantMetadata, err := gcp.FetchTenantMetadata(tenantName)

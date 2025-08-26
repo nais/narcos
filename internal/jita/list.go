@@ -1,30 +1,49 @@
 package jita
 
 import (
+	"cmp"
 	"context"
 	"fmt"
-	"sort"
+	"slices"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/nais/naistrix"
+	"github.com/nais/naistrix/writer"
 	"github.com/nais/narcos/internal/gcp"
 	"github.com/nais/narcos/internal/jita/command/flag"
+	"golang.org/x/sync/errgroup"
 )
 
-func List(ctx context.Context, flags *flag.ListFlags, out naistrix.Output, args []string) error {
-	userName, err := gcp.GCloudActiveUser(ctx)
+type Entitlement struct {
+	TenantName      string
+	EntitlementName string
+	HasGrants       YesNoIcon
+	TimeRemaining   string
+	MaxDuration     time.Duration
+	Roles           RoleList
+}
+
+type RoleList []string
+
+func (r RoleList) String() string {
+	return strings.Join(r, "\n")
+}
+
+func List(ctx context.Context, flags *flag.List, out naistrix.Output) error {
+	username, err := gcp.GCloudActiveUser(ctx)
 	if err != nil {
 		return err
 	}
 
 	var tenants []string
-	if len(args) == 0 {
+	if len(flags.Tenants) == 0 {
 		tenantBuckets, err := gcp.FetchAllTenantNames()
 		if err != nil {
-			panic(fmt.Errorf("failed parsing xml:, %v", err))
+			return err
 		}
+
 		for _, tenant := range tenantBuckets {
 			if !strings.HasSuffix(tenant.Name, ".json") {
 				continue
@@ -32,114 +51,87 @@ func List(ctx context.Context, flags *flag.ListFlags, out naistrix.Output, args 
 			tenants = append(tenants, strings.TrimSuffix(tenant.Name, ".json"))
 		}
 	} else {
-		tenants = args
+		tenants = flags.Tenants
 	}
 
-	if flags.IsVerbose() {
-		fmt.Printf("Tenant                    Entitlement           Granted  Remaining  Max. duration\n")
-		fmt.Printf("---------------------------------------------------------------------------------\n")
-	}
-	var wg sync.WaitGroup
-	errCh := make(chan error, len(tenants))
-	defer close(errCh)
+	allEntitlements := make([]Entitlement, 0)
+	var mu sync.Mutex
 
-	type OutputItem struct {
-		TenantName    string
-		EntShortName  string
-		HasGrants     YesNoIcon
-		TimeRemaining string
-		MaxDuration   time.Duration
-		Roles         []string
-		Verbose       bool
-	}
-
-	var outputMutex sync.Mutex
-	var outputs []OutputItem
-
-	for _, tenantName := range tenants {
-		wg.Add(1)
-
-		go func(tenant string) {
-			defer wg.Done()
-			tenantMetadata, err := gcp.FetchTenantMetadata(tenantName)
+	eg, ctx := errgroup.WithContext(ctx)
+	for _, tenant := range tenants {
+		eg.Go(func() error {
+			entitlements, err := getEntitlementsForTenant(ctx, username, tenant)
 			if err != nil {
-				errCh <- fmt.Errorf("GCP error fetching tenant metadata: %w", err)
-				return
+				return err
 			}
 
-			entitlements, err := gcp.ListEntitlements(ctx, tenantMetadata.NaisFolderID)
-			if err != nil {
-				errCh <- fmt.Errorf("GCP error listing entitlements: %w", err)
-				return
-			}
-
-			var entitlementWaitGroup sync.WaitGroup
-			var tenantOutputs []OutputItem
-
-			for _, ent := range entitlements.Entitlements {
-				entitlementWaitGroup.Add(1)
-				go func(userName string) {
-					defer entitlementWaitGroup.Done()
-
-					output := OutputItem{
-						TenantName:   tenant,
-						EntShortName: ent.ShortName(),
-						MaxDuration:  ent.MaxDuration(),
-						Verbose:      flags.IsVerbose(),
-					}
-
-					if output.Verbose {
-						output.Roles = ent.Roles()
-					}
-					grants, err := ent.ListActiveGrants(ctx, userName)
-					if err != nil {
-						errCh <- fmt.Errorf("fetchin active grants: %w", err)
-						return
-					} else if len(grants) > 0 {
-						output.HasGrants = true
-						output.TimeRemaining = grants[0].TimeRemaining().String()
-					}
-
-					outputMutex.Lock()
-					tenantOutputs = append(tenantOutputs, output)
-					outputMutex.Unlock()
-				}(userName)
-			}
-			entitlementWaitGroup.Wait()
-
-			outputMutex.Lock()
-			outputs = append(outputs, tenantOutputs...)
-			outputMutex.Unlock()
-		}(tenantName)
-	}
-	wg.Wait()
-
-	select {
-	case err := <-errCh:
-		return err
-	default:
-		// sort on time and then sort on tenantname, active grants go on top.
-		sort.Slice(outputs, func(i, j int) bool {
-			if outputs[i].TimeRemaining != outputs[j].TimeRemaining {
-				return outputs[i].TimeRemaining > outputs[j].TimeRemaining
-			}
-			return outputs[i].TenantName < outputs[j].TenantName
+			mu.Lock()
+			allEntitlements = append(allEntitlements, entitlements...)
+			mu.Unlock()
+			return nil
 		})
-
-		for _, out := range outputs {
-			fmt.Printf("%-24s  %-20s  %-6s  %-9s  %-9s\n",
-				out.TenantName,
-				out.EntShortName,
-				out.HasGrants,
-				out.TimeRemaining,
-				out.MaxDuration,
-			)
-			if out.Verbose {
-				for _, role := range out.Roles {
-					fmt.Printf("           `- %s\n", role)
-				}
-			}
-		}
-		return nil
 	}
+
+	if err := eg.Wait(); err != nil {
+		return err
+	}
+
+	slices.SortStableFunc(allEntitlements, func(a, b Entitlement) int {
+		if a.TimeRemaining != b.TimeRemaining {
+			return cmp.Compare(b.TimeRemaining, a.TimeRemaining)
+		}
+
+		if a.TenantName != b.TenantName {
+			return cmp.Compare(a.TenantName, b.TenantName)
+		}
+
+		return cmp.Compare(a.EntitlementName, b.EntitlementName)
+	})
+
+	headers := []string{"Tenant", "Entitlement", "Granted", "Remaining", "Max. duration"}
+	if flags.IsVerbose() {
+		headers = append(headers, "Roles")
+	}
+
+	return writer.NewTable(out, writer.WithColumns(headers...)).Write(allEntitlements)
+}
+
+func getEntitlementsForTenant(ctx context.Context, username, tenant string) ([]Entitlement, error) {
+	metadata, err := gcp.FetchTenantMetadata(tenant)
+	if err != nil {
+		return nil, fmt.Errorf("GCP error fetching tenant metadata: %w", err)
+	}
+
+	resp, err := gcp.ListEntitlements(ctx, metadata.NaisFolderID)
+	if err != nil {
+		return nil, fmt.Errorf("GCP error listing entitlements: %w", err)
+	}
+
+	entitlements := make([]Entitlement, len(resp.Entitlements))
+	for i, ent := range resp.Entitlements {
+		grants, err := ent.ListActiveGrants(ctx, username)
+		if err != nil {
+			return nil, fmt.Errorf("fetchin active grants: %w", err)
+		}
+
+		e := Entitlement{
+			TenantName:      tenant,
+			EntitlementName: ent.ShortName(),
+			MaxDuration:     ent.MaxDuration(),
+			Roles: func() RoleList {
+				roles := ent.Roles()
+				slices.Sort(roles)
+				return roles
+			}(),
+		}
+
+		if len(grants) > 0 {
+			e.HasGrants = true
+			e.TimeRemaining = grants[0].TimeRemaining().String()
+		}
+
+		entitlements[i] = e
+	}
+
+	return entitlements, nil
 }
