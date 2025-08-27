@@ -37,21 +37,13 @@ func List(ctx context.Context, flags *flag.List, out naistrix.Output) error {
 		return err
 	}
 
-	var tenants []string
-	if len(flags.Tenants) == 0 {
-		tenantBuckets, err := gcp.FetchAllTenantNames()
+	tenants := flags.Tenants
+	if len(tenants) == 0 {
+		var err error
+		tenants, err = gcp.FetchAllTenantNames(ctx)
 		if err != nil {
 			return err
 		}
-
-		for _, tenant := range tenantBuckets {
-			if !strings.HasSuffix(tenant.Name, ".json") {
-				continue
-			}
-			tenants = append(tenants, strings.TrimSuffix(tenant.Name, ".json"))
-		}
-	} else {
-		tenants = flags.Tenants
 	}
 
 	allEntitlements := make([]Entitlement, 0)
@@ -97,7 +89,7 @@ func List(ctx context.Context, flags *flag.List, out naistrix.Output) error {
 }
 
 func getEntitlementsForTenant(ctx context.Context, username, tenant string) ([]Entitlement, error) {
-	metadata, err := gcp.FetchTenantMetadata(tenant)
+	metadata, err := gcp.FetchTenantMetadata(ctx, tenant)
 	if err != nil {
 		return nil, fmt.Errorf("GCP error fetching tenant metadata: %w", err)
 	}
@@ -111,7 +103,7 @@ func getEntitlementsForTenant(ctx context.Context, username, tenant string) ([]E
 	for i, ent := range resp.Entitlements {
 		grants, err := ent.ListActiveGrants(ctx, username)
 		if err != nil {
-			return nil, fmt.Errorf("fetchin active grants: %w", err)
+			return nil, fmt.Errorf("fetching active grants: %w", err)
 		}
 
 		e := Entitlement{

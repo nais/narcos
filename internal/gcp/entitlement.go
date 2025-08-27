@@ -27,7 +27,7 @@ type TenantMetadata struct {
 	NaisFolderID FolderID `json:"folderId"`
 }
 
-type Tenant struct {
+type tenant struct {
 	Name string `xml:"Key"`
 }
 
@@ -36,16 +36,23 @@ type bucket struct {
 	Prefix      string   `xml:"Prefix"`
 	Marker      string   `xml:"Marker"`
 	IsTruncated bool     `xml:"IsTruncated"`
-	Contents    []Tenant `xml:"Contents"`
+	Contents    []tenant `xml:"Contents"`
 }
 
-func FetchAllTenantNames() ([]Tenant, error) {
-	const url = "https://storage.googleapis.com/nais-tenant-data"
-	resp, err := http.Get(url)
+// FetchAllTenantNames returns a list of known tenant names by listing files in a public Google storage bucket.
+func FetchAllTenantNames(ctx context.Context) ([]string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://storage.googleapis.com/nais-tenant-data", nil)
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != 200 {
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("server returned %q", resp.Status)
 	}
 
@@ -53,23 +60,35 @@ func FetchAllTenantNames() ([]Tenant, error) {
 	var bucket bucket
 	err = decoder.Decode(&bucket)
 
-	return bucket.Contents, err
+	tenants := make([]string, 0)
+	for _, tenant := range bucket.Contents {
+		if !strings.HasSuffix(tenant.Name, ".json") {
+			continue
+		}
+		tenants = append(tenants, strings.TrimSuffix(tenant.Name, ".json"))
+	}
+	return tenants, err
 }
 
-func FetchTenantMetadata(tenantName string) (*TenantMetadata, error) {
-	const urlTemplate = "https://storage.googleapis.com/nais-tenant-data/%s.json"
-
-	url := fmt.Sprintf(urlTemplate, tenantName)
-
-	resp, err := http.Get(url)
+// FetchTenantMetadata returns metadata for a given tenant.
+func FetchTenantMetadata(ctx context.Context, tenantName string) (*TenantMetadata, error) {
+	u := fmt.Sprintf("https://storage.googleapis.com/nais-tenant-data/%s.json", tenantName)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	if resp.StatusCode == 404 {
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode == http.StatusNotFound {
 		return nil, fmt.Errorf("unknown tenant %q", tenantName)
 	}
-	if resp.StatusCode >= 400 {
+
+	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("server returned %q", resp.Status)
 	}
 
@@ -133,7 +152,7 @@ func (ent Entitlement) ListActiveGrants(ctx context.Context, userName string) ([
 	requestURL := urlBase + "?" + urlValues.Encode()
 
 	for len(requestURL) > 0 {
-		req, err := http.NewRequest(http.MethodGet, requestURL, nil)
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -141,16 +160,19 @@ func (ent Entitlement) ListActiveGrants(ctx context.Context, userName string) ([
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 		req.Header.Set("Accept", "application/json")
 
-		response, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return nil, err
-		}
+		body, err := func(req *http.Request) ([]byte, error) {
+			resp, err := http.DefaultClient.Do(req)
+			if err != nil {
+				return nil, err
+			}
+			defer func() { _ = resp.Body.Close() }()
 
-		if response.StatusCode >= 400 {
-			return nil, fmt.Errorf("server returned %q", response.Status)
-		}
+			if resp.StatusCode != http.StatusOK {
+				return nil, fmt.Errorf("server returned %q", resp.Status)
+			}
 
-		body, err := io.ReadAll(response.Body)
+			return io.ReadAll(resp.Body)
+		}(req)
 		if err != nil {
 			return nil, err
 		}
@@ -235,10 +257,6 @@ func NewGrant(duration time.Duration, justification string) Grant {
 //
 // https://cloud.google.com/iam/docs/reference/pam/rest/v1beta/folders.locations.entitlements.grants/create
 func ElevatePrivileges(ctx context.Context, ent Entitlement, grant Grant) error {
-	const urlTemplate = "https://privilegedaccessmanager.googleapis.com/v1beta/%s/grants"
-
-	url := fmt.Sprintf(urlTemplate, ent.Name)
-
 	accessToken, err := GCloudAccessToken(ctx)
 	if err != nil {
 		return err
@@ -249,7 +267,8 @@ func ElevatePrivileges(ctx context.Context, ent Entitlement, grant Grant) error 
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(payload))
+	u := fmt.Sprintf("https://privilegedaccessmanager.googleapis.com/v1beta/%s/grants", ent.Name)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u, bytes.NewReader(payload))
 	if err != nil {
 		return err
 	}
@@ -260,8 +279,9 @@ func ElevatePrivileges(ctx context.Context, ent Entitlement, grant Grant) error 
 	if err != nil {
 		return err
 	}
+	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode >= 400 {
+	if resp.StatusCode >= http.StatusBadRequest {
 		errorMessage, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("server returned %q: %q", resp.Status, errorMessage)
 	}
@@ -273,28 +293,29 @@ func ElevatePrivileges(ctx context.Context, ent Entitlement, grant Grant) error 
 //
 // The folder ID is a reference to the `nais` folder of a specific tenant.
 func ListEntitlements(ctx context.Context, folderID FolderID) (*EntitlementsResponse, error) {
-	const urlTemplate = "https://privilegedaccessmanager.googleapis.com/v1beta/%s:search?callerAccessType=GRANT_REQUESTER"
-
-	url := fmt.Sprintf(urlTemplate, folderID.entitlementsID())
-
 	accessToken, err := GCloudAccessToken(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	u := fmt.Sprintf(
+		"https://privilegedaccessmanager.googleapis.com/v1beta/%s:search?callerAccessType=GRANT_REQUESTER",
+		folderID.entitlementsID(),
+	)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 
-	response, err := http.DefaultClient.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
+	defer func() { _ = resp.Body.Close() }()
 
-	body, err := io.ReadAll(response.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
