@@ -70,7 +70,7 @@ jobs:
   checks:
     strategy:
       matrix:
-        mise_task: [deadcode, vulncheck, ci-fmt, staticcheck, test, vet]
+        mise_task: [staticcheck, vulncheck, deadcode, gosec, vet, ci-fmt, test]
     name: |
       Run mise task: ${{ matrix.mise_task }}
     needs: [release-info]
