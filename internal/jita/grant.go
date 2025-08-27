@@ -15,7 +15,7 @@ import (
 func Grant(ctx context.Context, flags *flag.Grant, entitlementName, tenantName string) error {
 	/////
 	// Fetch metadata from Google
-	tenantMetadata, err := gcp.FetchTenantMetadata(tenantName)
+	tenantMetadata, err := gcp.FetchTenantMetadata(ctx, tenantName)
 	if err != nil {
 		return fmt.Errorf("fetching tenant metadata: %w", err)
 	}
