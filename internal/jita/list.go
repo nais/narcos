@@ -19,7 +19,6 @@ import (
 type Entitlement struct {
 	TenantName      string
 	EntitlementName string
-	HasGrants       YesNoIcon
 	TimeRemaining   string
 	MaxDuration     time.Duration
 	Roles           RoleList
@@ -80,7 +79,7 @@ func List(ctx context.Context, flags *flag.List, out naistrix.Output) error {
 		return cmp.Compare(a.EntitlementName, b.EntitlementName)
 	})
 
-	headers := []string{"Tenant", "Entitlement", "Granted", "Remaining", "Max. duration"}
+	headers := []string{"Tenant", "Entitlement", "Time remaining", "Max. duration"}
 	if flags.IsVerbose() {
 		headers = append(headers, "Roles")
 	}
@@ -118,7 +117,6 @@ func getEntitlementsForTenant(ctx context.Context, username, tenant string) ([]E
 		}
 
 		if len(grants) > 0 {
-			e.HasGrants = true
 			e.TimeRemaining = grants[0].TimeRemaining().String()
 		}
 
