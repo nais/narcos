@@ -145,7 +145,7 @@ jobs:
 
           export VERSION="${{ needs.release-info.outputs.version }}"
           export GOARCH="${{ matrix.arch }}"
-          mise run package-deb
+          mise run build:deb
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
