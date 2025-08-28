@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Build CLI"
+go build \
+  -ldflags "-s -w -X github.com/nais/narcos/internal/version.Version=${VERSION:-local}" \
+  -o bin/narc ./
