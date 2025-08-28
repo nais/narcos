@@ -4,28 +4,29 @@
 
 ## Local Development
 
-### Install the required go version:
+### Clone the repository:
+
+```bash
+git clone git@github.com:nais/narcos.git
+cd narcos
+```
+
+### Install tools
+
+Narcos uses [mise](https://mise.jdx.dev/) to handle dependencies and tasks. After installing mise run the following command to install tools:
 
 ```bash
 mise install
 ```
 
-### Build cli
+### Run tasks
 
-```
-mise run build
-```
+Run `mise run` to see all available tasks. These are some of the most common ones used for local development:
 
-### Run tests
-
-```
-mise run test
-```
-
-### Verify cli
-
-```
-./bin/narc --version
+```bash
+mise run test # run tests
+mise run check # run all static code analysis tools
+mise run build # build the CLI
 ```
 
 ### Setup shell completion for local builds
