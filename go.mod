@@ -15,12 +15,12 @@ require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/go-logr/logr v1.4.3
 	github.com/nais/device v0.0.0-20250703090236-08bd8b276591
-	github.com/nais/naistrix v0.4.1
-	github.com/stretchr/testify v1.11.0
+	github.com/nais/naistrix v0.4.3
+	github.com/stretchr/testify v1.11.1
 	golang.org/x/sync v0.16.0
 	google.golang.org/api v0.248.0
 	google.golang.org/grpc v1.75.0
-	k8s.io/client-go v0.33.4
+	k8s.io/client-go v0.34.0
 	k8s.io/klog/v2 v2.130.1
 )
 
@@ -97,7 +97,7 @@ require (
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee // indirect
 	github.com/muesli/mango v0.2.0 // indirect
 	github.com/muesli/mango-cobra v1.2.0 // indirect
 	github.com/muesli/mango-pflag v0.1.0 // indirect
@@ -151,12 +151,11 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.6.1 // indirect
-	k8s.io/apimachinery v0.33.4 // indirect
-	k8s.io/kube-openapi v0.0.0-20250610211856-8b98d1ed966a // indirect
+	k8s.io/apimachinery v0.34.0 // indirect
 	k8s.io/utils v0.0.0-20250820121507-0af2bda4dd1d // indirect
 	mvdan.cc/gofumpt v0.8.0 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.7.0 // indirect
+	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
