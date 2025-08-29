@@ -10,18 +10,18 @@ import (
 	"time"
 
 	"github.com/nais/naistrix"
-	"github.com/nais/naistrix/writer"
+	"github.com/nais/naistrix/output"
 	"github.com/nais/narcos/internal/gcp"
 	"github.com/nais/narcos/internal/jita/command/flag"
 	"golang.org/x/sync/errgroup"
 )
 
 type Entitlement struct {
-	TenantName      string
-	EntitlementName string
-	TimeRemaining   string
-	MaxDuration     time.Duration
-	Roles           RoleList
+	Tenant        string
+	Entitlement   string        `heading:"Entitlement"`
+	TimeRemaining string        `heading:"Time remaining"`
+	MaxDuration   time.Duration `heading:"Max. duration"`
+	Roles         RoleList      `hidden:"true"`
 }
 
 type RoleList []string
@@ -45,7 +45,7 @@ func List(ctx context.Context, flags *flag.List, out naistrix.Output) error {
 		}
 	}
 
-	allEntitlements := make([]Entitlement, 0)
+	allEntitlements := make([]*Entitlement, 0)
 	var mu sync.Mutex
 
 	eg, ctx := errgroup.WithContext(ctx)
@@ -67,27 +67,29 @@ func List(ctx context.Context, flags *flag.List, out naistrix.Output) error {
 		return err
 	}
 
-	slices.SortStableFunc(allEntitlements, func(a, b Entitlement) int {
+	slices.SortStableFunc(allEntitlements, func(a, b *Entitlement) int {
 		if a.TimeRemaining != b.TimeRemaining {
 			return cmp.Compare(b.TimeRemaining, a.TimeRemaining)
 		}
 
-		if a.TenantName != b.TenantName {
-			return cmp.Compare(a.TenantName, b.TenantName)
+		if a.Tenant != b.Tenant {
+			return cmp.Compare(a.Tenant, b.Tenant)
 		}
 
-		return cmp.Compare(a.EntitlementName, b.EntitlementName)
+		return cmp.Compare(a.Entitlement, b.Entitlement)
 	})
 
-	headers := []string{"Tenant", "Entitlement", "Time remaining", "Max. duration"}
+	opts := make([]output.TableOptionFunc, 0)
 	if flags.IsVerbose() {
-		headers = append(headers, "Roles")
+		opts = append(opts, output.TableWithShowHiddenColumns())
 	}
 
-	return writer.NewTable(out, writer.WithColumns(headers...)).Write(allEntitlements)
+	return out.
+		Table(opts...).
+		Render(allEntitlements)
 }
 
-func getEntitlementsForTenant(ctx context.Context, username, tenant string) ([]Entitlement, error) {
+func getEntitlementsForTenant(ctx context.Context, username, tenant string) ([]*Entitlement, error) {
 	metadata, err := gcp.FetchTenantMetadata(ctx, tenant)
 	if err != nil {
 		return nil, fmt.Errorf("GCP error fetching tenant metadata: %w", err)
@@ -98,17 +100,17 @@ func getEntitlementsForTenant(ctx context.Context, username, tenant string) ([]E
 		return nil, fmt.Errorf("GCP error listing entitlements: %w", err)
 	}
 
-	entitlements := make([]Entitlement, len(resp.Entitlements))
+	entitlements := make([]*Entitlement, len(resp.Entitlements))
 	for i, ent := range resp.Entitlements {
 		grants, err := ent.ListActiveGrants(ctx, username)
 		if err != nil {
 			return nil, fmt.Errorf("fetching active grants: %w", err)
 		}
 
-		e := Entitlement{
-			TenantName:      tenant,
-			EntitlementName: ent.ShortName(),
-			MaxDuration:     ent.MaxDuration(),
+		e := &Entitlement{
+			Tenant:      tenant,
+			Entitlement: ent.ShortName(),
+			MaxDuration: ent.MaxDuration(),
 			Roles: func() RoleList {
 				roles := ent.Roles()
 				slices.Sort(roles)
