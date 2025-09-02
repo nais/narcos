@@ -70,7 +70,16 @@ jobs:
   checks:
     strategy:
       matrix:
-        mise_task: [check:staticcheck, check:govulncheck, check:deadcode, check:gosec, check:govet, fmt:ci, test]
+        mise_task:
+          [
+            check:staticcheck,
+            check:govulncheck,
+            check:deadcode,
+            check:gosec,
+            check:govet,
+            fmt:ci,
+            test,
+          ]
     name: |
       Run mise task: ${{ matrix.mise_task }}
     needs: [release-info]
@@ -272,7 +281,7 @@ jobs:
         target:
           - template: nur.nix
             repo: nais/nur
-            file: pkgs/narc-cli/default.nix
+            file: pkgs/narc-cli.nix
           - template: homebrew.rb
             repo: nais/homebrew-tap
             file: Formula/narc.rb
