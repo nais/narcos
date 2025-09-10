@@ -17,10 +17,10 @@ require (
 	github.com/nais/device v0.0.0-20250703090236-08bd8b276591
 	github.com/nais/naistrix v0.5.0
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/sync v0.16.0
-	google.golang.org/api v0.248.0
-	google.golang.org/grpc v1.75.0
-	k8s.io/client-go v0.34.0
+	golang.org/x/sync v0.17.0
+	google.golang.org/api v0.249.0
+	google.golang.org/grpc v1.75.1
+	k8s.io/client-go v0.34.1
 	k8s.io/klog/v2 v2.130.1
 )
 
@@ -141,7 +141,7 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.6.1 // indirect
-	k8s.io/apimachinery v0.34.0 // indirect
+	k8s.io/apimachinery v0.34.1 // indirect
 	k8s.io/utils v0.0.0-20250820121507-0af2bda4dd1d // indirect
 	mvdan.cc/gofumpt v0.8.0 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
