@@ -183,7 +183,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
       - name: Run Nix Installer
-        uses: DeterminateSystems/nix-installer-action@v19
+        uses: DeterminateSystems/nix-installer-action@v20
       - name: Create tag
         run: git tag ${{ needs.release-info.outputs.version }}
       - name: Download artifacts
