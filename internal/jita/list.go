@@ -30,7 +30,7 @@ func (r RoleList) String() string {
 	return strings.Join(r, "\n")
 }
 
-func List(ctx context.Context, flags *flag.List, out naistrix.Output) error {
+func List(ctx context.Context, flags *flag.List, out *naistrix.OutputWriter) error {
 	username, err := gcp.GCloudActiveUser(ctx)
 	if err != nil {
 		return err

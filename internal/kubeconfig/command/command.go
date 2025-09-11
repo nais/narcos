@@ -8,11 +8,10 @@ import (
 	"github.com/nais/narcos/internal/gcp"
 	"github.com/nais/narcos/internal/kubeconfig"
 	"github.com/nais/narcos/internal/kubeconfig/command/flag"
-	"github.com/nais/narcos/internal/root"
 )
 
-func Kubeconfig(parentFlags *root.Flags) *naistrix.Command {
-	flags := &flag.KubeconfigFlags{Flags: parentFlags}
+func Kubeconfig(globalFlags *naistrix.GlobalFlags) *naistrix.Command {
+	flags := &flag.KubeconfigFlags{GlobalFlags: globalFlags}
 	return &naistrix.Command{
 		Name:    "kubeconfig",
 		Aliases: []string{"kc"},
@@ -23,7 +22,7 @@ func Kubeconfig(parentFlags *root.Flags) *naistrix.Command {
 			nais login
 		`),
 		Flags: flags,
-		RunFunc: func(ctx context.Context, out naistrix.Output, args []string) error {
+		RunFunc: func(ctx context.Context, out *naistrix.OutputWriter, args []string) error {
 			email, err := gcp.ValidateAndGetUserLogin(ctx, true)
 			if err != nil {
 				return err
