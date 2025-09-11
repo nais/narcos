@@ -19,14 +19,12 @@ func WithFromScratch(enabled bool) FilterOption {
 	}
 }
 
-// WithCiClusters is used by Narc
 func WithCiClusters(include bool) FilterOption {
 	return func(options *filterOptions) {
 		options.includeCi = include
 	}
 }
 
-// WithManagementClusters is used by Narc
 func WithManagementClusters(include bool) FilterOption {
 	return func(options *filterOptions) {
 		options.includeManagement = include
@@ -45,7 +43,6 @@ func WithOverwriteData(enabled bool) FilterOption {
 	}
 }
 
-// WithPrefixedTenants is used by Narc
 func WithPrefixedTenants(prefix bool) FilterOption {
 	return func(options *filterOptions) {
 		options.prefixWithTenants = prefix
