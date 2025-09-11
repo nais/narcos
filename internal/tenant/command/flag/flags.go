@@ -1,11 +1,11 @@
 package flag
 
 import (
-	"github.com/nais/narcos/internal/root"
+	"github.com/nais/naistrix"
 )
 
 type TenantFlags struct {
-	*root.Flags
+	*naistrix.GlobalFlags
 }
 
 type ListFlags struct {

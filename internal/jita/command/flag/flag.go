@@ -3,11 +3,11 @@ package flag
 import (
 	"time"
 
-	"github.com/nais/narcos/internal/root"
+	"github.com/nais/naistrix"
 )
 
 type Jita struct {
-	*root.Flags
+	*naistrix.GlobalFlags
 }
 
 type List struct {

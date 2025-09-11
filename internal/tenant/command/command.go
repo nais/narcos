@@ -8,12 +8,11 @@ import (
 
 	"github.com/nais/naistrix"
 	"github.com/nais/narcos/internal/naisdevice"
-	"github.com/nais/narcos/internal/root"
 	"github.com/nais/narcos/internal/tenant/command/flag"
 )
 
-func Tenant(rootFlags *root.Flags) *naistrix.Command {
-	tenantFlags := &flag.TenantFlags{Flags: rootFlags}
+func Tenant(globalFlags *naistrix.GlobalFlags) *naistrix.Command {
+	tenantFlags := &flag.TenantFlags{GlobalFlags: globalFlags}
 	return &naistrix.Command{
 		Name:  "tenant",
 		Title: "Work with different Nais tenants.",
@@ -31,7 +30,7 @@ func list(parentFlags *flag.TenantFlags) *naistrix.Command {
 		Name:  "list",
 		Title: "List tenants.",
 		Flags: flags,
-		RunFunc: func(ctx context.Context, out naistrix.Output, args []string) error {
+		RunFunc: func(ctx context.Context, out *naistrix.OutputWriter, args []string) error {
 			tenants, err := naisdevice.ListTenants(ctx)
 			if err != nil {
 				return err
@@ -77,7 +76,7 @@ func set(parentFlags *flag.TenantFlags) *naistrix.Command {
 			return nil
 		},
 		Flags: flags,
-		RunFunc: func(ctx context.Context, out naistrix.Output, args []string) error {
+		RunFunc: func(ctx context.Context, out *naistrix.OutputWriter, args []string) error {
 			if err := naisdevice.SetTenant(ctx, args[0]); err != nil {
 				return err
 			}
@@ -94,7 +93,7 @@ func get(parentFlags *flag.TenantFlags) *naistrix.Command {
 		Name:  "get",
 		Title: "Get the active tenant.",
 		Flags: flags,
-		RunFunc: func(ctx context.Context, out naistrix.Output, args []string) error {
+		RunFunc: func(ctx context.Context, out *naistrix.OutputWriter, args []string) error {
 			tenant, err := naisdevice.GetTenant(ctx)
 			if err != nil {
 				return err

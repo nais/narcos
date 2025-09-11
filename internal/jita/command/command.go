@@ -7,11 +7,10 @@ import (
 	"github.com/nais/naistrix"
 	"github.com/nais/narcos/internal/jita"
 	"github.com/nais/narcos/internal/jita/command/flag"
-	"github.com/nais/narcos/internal/root"
 )
 
-func Jita(rootFlags *root.Flags) *naistrix.Command {
-	jitaFlags := &flag.Jita{Flags: rootFlags}
+func Jita(globalFlags *naistrix.GlobalFlags) *naistrix.Command {
+	jitaFlags := &flag.Jita{GlobalFlags: globalFlags}
 	return &naistrix.Command{
 		Name:  "jita",
 		Title: "Just-in-time privilege elevation for tenants.",
@@ -29,7 +28,7 @@ func list(parentFlags *flag.Jita) *naistrix.Command {
 		Title:       "List active and potential privilege elevations",
 		Description: "To include the roles associated with each entitlement in the output, use verbose (-v) mode.",
 		Flags:       flags,
-		RunFunc: func(ctx context.Context, out naistrix.Output, _ []string) error {
+		RunFunc: func(ctx context.Context, out *naistrix.OutputWriter, _ []string) error {
 			return jita.List(ctx, flags, out)
 		},
 	}
@@ -51,7 +50,7 @@ func grant(parentFlags *flag.Jita) *naistrix.Command {
 			{Name: "entitlement"},
 			{Name: "tenant"},
 		},
-		RunFunc: func(ctx context.Context, out naistrix.Output, args []string) error {
+		RunFunc: func(ctx context.Context, out *naistrix.OutputWriter, args []string) error {
 			return jita.Grant(ctx, flags, args[0], args[1])
 		},
 	}
