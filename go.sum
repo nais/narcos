@@ -230,8 +230,8 @@ github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/nais/device v0.0.0-20250703090236-08bd8b276591 h1:MgFQR6KwI6nB8Dl8c6IWT9deni9ln2P0h7EX8kAo1Bo=
 github.com/nais/device v0.0.0-20250703090236-08bd8b276591/go.mod h1:5EJDz4LiIliyvsUZb8gRDwpqihR7r4J+T4pJxUjBc9I=
-github.com/nais/naistrix v0.5.2 h1:fRvUlisHvKjn/ZtN0cQjawxDP3JG0mWh8TFwR+yAL+Q=
-github.com/nais/naistrix v0.5.2/go.mod h1:bXq0TpixgkUmE/qOvOXd0XZgiOYhx6tfXOigR3HDIw8=
+github.com/nais/naistrix v0.6.0 h1:2Rnxr9x2yVL11svDt6fesDpN75umCe8rlpZPb/qoLek=
+github.com/nais/naistrix v0.6.0/go.mod h1:bXq0TpixgkUmE/qOvOXd0XZgiOYhx6tfXOigR3HDIw8=
 github.com/onsi/ginkgo/v2 v2.23.4 h1:ktYTpKJAVZnDT4VjxSbiBenUjmlL/5QkBEocaWXiQus=
 github.com/onsi/ginkgo/v2 v2.23.4/go.mod h1:Bt66ApGPBFzHyR+JO10Zbt0Gsp4uWxu5mIOTusL46e8=
 github.com/onsi/gomega v1.38.0 h1:c/WX+w8SLAinvuKKQFh77WEucCnPk4j2OTUr7lt7BeY=
