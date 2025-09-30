@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+#MISE description="Generate shell completions"
+set -euo pipefail
+
+rm -rf completions
+mkdir completions
+for sh in bash zsh fish powershell; do
+	GOOS="" GOARCH="" go run main.go completion "$sh" >"completions/narc.$sh"
+done

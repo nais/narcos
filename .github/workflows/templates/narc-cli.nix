@@ -8,22 +8,22 @@
   stdenvNoCC,
 }: let
   shaMap = {
-    x86_64-linux = "__SHA_LINUX_AMD64_BASE32__";
-    aarch64-linux = "__SHA_LINUX_ARM64_BASE32__";
-    x86_64-darwin = "__SHA_DARWIN_AMD64_BASE32__";
-    aarch64-darwin = "__SHA_DARWIN_ARM64_BASE32__";
+    x86_64-linux = "$NARC_CLI_LINUX_AMD64_HASH_BASE16";
+    aarch64-linux = "$NARC_CLI_LINUX_ARM64_HASH_BASE16";
+    x86_64-darwin = "$NARC_CLI_DARWIN_AMD64_HASH_BASE16";
+    aarch64-darwin = "$NARC_CLI_DARWIN_ARM64_HASH_BASE16";
   };
 
   urlMap = {
-    x86_64-linux = "https://github.com/nais/narcos/releases/download/__VERSION__/narc-cli___VERSION___linux_amd64.tar.gz";
-    aarch64-linux = "https://github.com/nais/narcos/releases/download/__VERSION__/narc-cli___VERSION___linux_arm64.tar.gz";
-    x86_64-darwin = "https://github.com/nais/narcos/releases/download/__VERSION__/narc-cli___VERSION___darwin_amd64.tar.gz";
-    aarch64-darwin = "https://github.com/nais/narcos/releases/download/__VERSION__/narc-cli___VERSION___darwin_arm64.tar.gz";
+    x86_64-linux = "$NARC_CLI_LINUX_AMD64_URL";
+    aarch64-linux = "$NARC_CLI_LINUX_ARM64_URL";
+    x86_64-darwin = "$NARC_CLI_DARWIN_AMD64_URL";
+    aarch64-darwin = "$NARC_CLI_DARWIN_ARM64_URL";
   };
 in
   stdenvNoCC.mkDerivation {
     pname = "narc-cli";
-    version = "__VERSION__";
+    version = "$VERSION";
     src = fetchurl {
       url = urlMap.${system};
       sha256 = shaMap.${system};

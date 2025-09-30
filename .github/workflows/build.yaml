@@ -20,306 +20,178 @@ jobs:
       issues: write
       pull-requests: write
     outputs:
-      version: ${{ steps.generate.outputs.version }}
-      changelog: ${{ steps.generate.outputs.changelog }}
+      version: ${{ steps.release-info.outputs.version }}
+      changelog: ${{ steps.release-info.outputs.changelog }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - name: Install tooling
-        uses: jdx/mise-action@v3
-      - name: Generate release info
-        id: generate
-        run: |
-          version="$(git-cliff --bumped-version)"
-          echo "version=$version" >>"$GITHUB_OUTPUT"
-          echo "Bumped version: $version"
-          changelog="$(git-cliff \
-            --tag "$version" \
-            --github-repo "${{ github.repository }}" \
-            --github-token "${{ secrets.GITHUB_TOKEN }}" \
-            --unreleased \
-            --strip all \
-            -v)"
-          echo "changelog<<EOF" >>"$GITHUB_OUTPUT"
-          echo "$changelog" >>"$GITHUB_OUTPUT"
-          echo "EOF" >>"$GITHUB_OUTPUT"
-
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo -n "PR comment with release info: "
-            if [[ -n "$changelog" ]]; then
-              pr_comment="# :pencil: Changelog preview
-          Below is a preview of the Changelog that will be added to the next release. \
-          Only commit messages that follow the [Conventional Commits specification](https://www.conventionalcommits.org/) will be included in the Changelog.
-
-          $changelog"
-            else
-              pr_comment="# :disappointed: No release for you
-          There are no commits in your branch that follow the [Conventional Commits specification](https://www.conventionalcommits.org/), so no release will be created.
-
-          If you want to create a release from this pull request, please reword your commit messages to replace this message with a preview of a beautiful Changelog."
-            fi
-
-            echo -e "$pr_comment" | gh pr comment "${{ github.event.number }}" \
-              --edit-last --create-if-none \
-              --repo "${{ github.repository }}" \
-              --body-file=-
-          fi
-
+      - uses: jdx/mise-action@v3
+      - id: release-info
+        run: mise run ci:release-info
   checks:
     strategy:
+      fail-fast: false
       matrix:
-        mise_task:
-          [
-            check:staticcheck,
-            check:govulncheck,
-            check:deadcode,
-            check:gosec,
-            check:govet,
-            fmt:ci,
-            test,
-          ]
-    name: |
-      Run mise task: ${{ matrix.mise_task }}
-    needs: [release-info]
+        mise-task:
+          - check:staticcheck
+          - check:govulncheck
+          - check:deadcode
+          - check:gosec
+          - check:govet
+          - ci:fmt
+          - test
     runs-on: ubuntu-latest
     permissions:
-      checks: write
-      pull-requests: write
+      contents: read
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-      - name: Install tooling
-        uses: jdx/mise-action@v3
-        with:
-          cache: false
-      - name: mise run ${{ matrix.mise_task }}
-        run: mise run ${{ matrix.mise_task }}
-
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v3
+      - run: mise run ${{ matrix.mise-task }}
   builds:
     runs-on: ubuntu-latest
     permissions:
       contents: read
     strategy:
+      fail-fast: false
       matrix:
         arch: [amd64, arm64]
         os: [linux, darwin]
-    name: Generate binary for ${{ matrix.os }}-${{ matrix.arch }}
     needs: [release-info]
     steps:
-      - name: Checkout latest code
-        uses: actions/checkout@v5
-      - name: Install tooling
-        uses: jdx/mise-action@v3
-        with:
-          cache: false
-      - name: Build binary
-        run: |
-          ./script/completions.sh
-
-          export VERSION="${{ needs.release-info.outputs.version }}"
-          export GOOS="${{ matrix.os }}"
-          export GOARCH="${{ matrix.arch }}"
-          mise run build
-
-          binary="narc"
-
-          tar -zcf "narc-cli_${{ needs.release-info.outputs.version }}_${{ matrix.os }}_${{ matrix.arch }}.tar.gz" ./completions -C bin/ "$binary"
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v3
+      - env:
+          VERSION: ${{ needs.release-info.outputs.version }}
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+          SIGN_CERT: ${{ secrets.SIGN_CERT }}
+          SIGN_KEY: ${{ secrets.SIGN_KEY }}
+        run: mise run ci:build
+      - uses: actions/upload-artifact@v4
         with:
           name: archive-${{ matrix.os }}-${{ matrix.arch }}
-          path: narc-cli_${{ needs.release-info.outputs.version }}_${{ matrix.os }}_${{ matrix.arch }}.tar.gz
-
+          path: narc-cli_${{ matrix.os }}_${{ matrix.arch }}.tgz
+          if-no-files-found: error
   package-deb:
     runs-on: ubuntu-latest
     permissions:
       contents: read
     strategy:
+      fail-fast: false
       matrix:
         arch: [amd64, arm64]
-    name: Create Debian package for ${{ matrix.arch }}
     needs: [release-info]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-      - name: Install tooling
-        uses: jdx/mise-action@v3
-        with:
-          cache: false
-      - name: Create package
-        run: |
-          ./script/completions.sh
-
-          export VERSION="${{ needs.release-info.outputs.version }}"
-          export GOARCH="${{ matrix.arch }}"
-          mise run build:deb
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v3
+      - env:
+          VERSION: ${{ needs.release-info.outputs.version }}
+          GOARCH: ${{ matrix.arch }}
+        run: mise run package-deb
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
           name: deb-${{ matrix.arch }}
-          path: narc-cli_${{ needs.release-info.outputs.version }}_${{ matrix.arch }}.deb
-
-  # Used by GitHub to determine if all checks/builds have passed
+          path: narc-cli_${{ matrix.arch }}.deb
+          if-no-files-found: error
   branch-protection-checkpoint:
-    name: Branch protection checkpoint
     runs-on: ubuntu-latest
     permissions:
       contents: read
     needs: [checks, builds, package-deb]
     steps:
-      - name: Output status message
-        run: echo "Checks and builds passed :rocket:"
-
+      - run: echo "Checks and builds passed :rocket:"
   release-github:
-    if: github.ref == 'refs/heads/main' && needs.release-info.outputs.changelog != ''
+    if: github.ref == 'refs/heads/main' && needs.release-info.outputs.changelog != '' && needs.release-info.outputs.version != ''
     runs-on: ubuntu-latest
-    name: Create new tag and GitHub release
     permissions:
       contents: write
-    needs: [release-info, builds, package-deb, checks]
+    needs: [release-info, branch-protection-checkpoint]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-      - name: Run Nix Installer
-        uses: DeterminateSystems/nix-installer-action@v20
-      - name: Create tag
-        run: git tag ${{ needs.release-info.outputs.version }}
-      - name: Download artifacts
-        uses: actions/download-artifact@v5
-      - name: Generate hashes
-        id: hashes
-        run: |
-          echo '{}' > hashes.json
-          version="${{ needs.release-info.outputs.version }}"
-
-          for arch in amd64 arm64; do
-            # Generate hashes for debs
-            file="narc-cli_${version}_${arch}.deb"
-            hash="$(nix-hash --type sha256 --flat "./deb-${arch}/${file}")"
-            echo "$hash  $file" >> checksums.txt
-
-            # Generate hashes for archives
-            for os in linux darwin; do
-              file="narc-cli_${version}_${os}_${arch}.tar.gz"
-              hash16="$(nix-hash --type sha256 --flat "./archive-${os}-${arch}/${file}")"
-              hash32="$(nix-hash --type sha256 --flat --base32 "./archive-${os}-${arch}/${file}")"
-              echo "$hash16  $file" >> checksums.txt
-
-              # This is used by the external release jobs (nur, homebrew)
-              jq --arg os "$os" --arg arch "$arch" --arg encoding "base16" --arg hash "$hash16" '.[$os][$arch][$encoding] = $hash' hashes.json > new_hashes.json; mv {new_,}hashes.json
-              jq --arg os "$os" --arg arch "$arch" --arg encoding "base32" --arg hash "$hash32" '.[$os][$arch][$encoding] = $hash' hashes.json > new_hashes.json; mv {new_,}hashes.json
-            done
-          done
-      - name: Upload hashes
-        uses: actions/upload-artifact@v4
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v3
+      - uses: actions/download-artifact@v5
         with:
-          name: hashes-json
-          path: hashes.json
-      - name: Create GitHub release
-        uses: softprops/action-gh-release@v2
+          merge-multiple: true
+          path: release_artifacts
+      - run: mise run ci:generate-checksums ./release_artifacts/ > ./release_artifacts/checksums.txt
+      - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.release-info.outputs.version }}
           body: ${{ needs.release-info.outputs.changelog }}
           prerelease: false
-          files: |
-            archive-linux-amd64/narc-cli_${{ needs.release-info.outputs.version }}_linux_amd64.tar.gz
-            archive-linux-arm64/narc-cli_${{ needs.release-info.outputs.version }}_linux_arm64.tar.gz
-            archive-darwin-amd64/narc-cli_${{ needs.release-info.outputs.version }}_darwin_amd64.tar.gz
-            archive-darwin-arm64/narc-cli_${{ needs.release-info.outputs.version }}_darwin_arm64.tar.gz
-            deb-amd64/narc-cli_${{ needs.release-info.outputs.version }}_amd64.deb
-            deb-arm64/narc-cli_${{ needs.release-info.outputs.version }}_arm64.deb
-            checksums.txt
+          files: ./release_artifacts/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - env:
+          VERSION: ${{ needs.release-info.outputs.version }}
+        run: |
+          echo '${{ steps.release.outputs.assets }}' > assets.json
+          mise run ci:prepare-template-vars ./release_artifacts/checksums.txt ./assets.json -v > template.vars
+      - uses: actions/upload-artifact@v4
+        with:
+          name: template-vars
+          path: ./template.vars
+          if-no-files-found: error
       - run: |
           echo "## :rocket: Release ${{ needs.release-info.outputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "A new release is available over at https://github.com/${{ github.repository }}/releases/tag/${{ needs.release-info.outputs.version }}." >> $GITHUB_STEP_SUMMARY
-
   release-gar:
     if: github.ref == 'refs/heads/main'
-    needs: [release-info, release-github]
+    needs: [release-github]
     runs-on: ubuntu-latest
-    name: Publish release on GAR
     permissions:
       contents: read
       id-token: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-      - name: Authenticate to Google Cloud
-        id: auth
+      - uses: actions/checkout@v5
+      - id: auth
         uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ secrets.NAIS_IO_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: gh-narcos@nais-io.iam.gserviceaccount.com
           token_format: access_token
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v3
-      - name: Download arm64 deb artifacts
-        uses: actions/download-artifact@v5
+      - uses: google-github-actions/setup-gcloud@v3
+      - uses: actions/download-artifact@v5
         with:
           name: deb-arm64
-      - name: Download amd64 deb artifacts
-        uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v5
         with:
           name: deb-amd64
-      - name: Upload files to GAR
-        env:
+      - env:
           VERSION: ${{ needs.release-info.outputs.version }}
         run: |
-          gcloud --project nais-io artifacts apt upload nais-ppa --quiet --source narc-cli_${VERSION}_arm64.deb --location europe-north1
-          gcloud --project nais-io artifacts apt upload nais-ppa --quiet --source narc-cli_${VERSION}_amd64.deb --location europe-north1
-
+          gcloud --project nais-io artifacts apt upload nais-ppa --quiet --source narc-cli_arm64.deb --location europe-north1
+          gcloud --project nais-io artifacts apt upload nais-ppa --quiet --source narc-cli_amd64.deb --location europe-north1
   release-external-repos:
     if: github.ref == 'refs/heads/main'
-    needs: [release-info, release-github]
+    needs: [release-github]
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         target:
-          - template: nur.nix
-            repo: nais/nur
+          - repo: nais/nur
             file: pkgs/narc-cli.nix
-          - template: homebrew.rb
-            repo: nais/homebrew-tap
+          - repo: nais/homebrew-tap
             file: Formula/narc.rb
-    name: Publish release to ${{ matrix.target.repo }}
     permissions:
       contents: read
       id-token: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-      - name: Generate installation access token
-        uses: navikt/github-app-token-generator@v1
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v3
+      - uses: navikt/github-app-token-generator@v1
         id: token
         with:
           private-key: "${{ secrets.NAIS_APP_PRIVATE_KEY }}"
           app-id: "${{ secrets.NAIS_APP_ID }}"
           repo: ${{ matrix.target.repo }}
-      - name: Download hashes
-        uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v5
         with:
-          name: hashes-json
-      - name: Generate manifest
-        run: |
-          git clone "https://git:${{ steps.token.outputs.token }}@github.com/${{ matrix.target.repo }}" repo
-          cd repo || exit 1
-          mkdir -p "$(dirname "${{ matrix.target.file }}")"
-          sed \
-            -e "s/__VERSION__/${{ needs.release-info.outputs.version }}/g" \
-            -e "s/__SHA_DARWIN_AMD64__/$(jq -r '.darwin.amd64.base16' ../hashes.json)/g" \
-            -e "s/__SHA_DARWIN_ARM64__/$(jq -r '.darwin.arm64.base16' ../hashes.json)/g" \
-            -e "s/__SHA_LINUX_AMD64__/$(jq -r '.linux.amd64.base16' ../hashes.json)/g" \
-            -e "s/__SHA_LINUX_ARM64__/$(jq -r '.linux.arm64.base16' ../hashes.json)/g" \
-            -e "s/__SHA_DARWIN_AMD64_BASE32__/$(jq -r '.darwin.amd64.base32' ../hashes.json)/g" \
-            -e "s/__SHA_DARWIN_ARM64_BASE32__/$(jq -r '.darwin.arm64.base32' ../hashes.json)/g" \
-            -e "s/__SHA_LINUX_AMD64_BASE32__/$(jq -r '.linux.amd64.base32' ../hashes.json)/g" \
-            -e "s/__SHA_LINUX_ARM64_BASE32__/$(jq -r '.linux.arm64.base32' ../hashes.json)/g" \
-            "../.github/workflows/templates/${{ matrix.target.template }}" \
-            > "${{ matrix.target.file }}"
-
-          git -c user.name='naisbot' -c user.email='bot@nais.io' commit -am "Bump narc-cli to ${{ needs.release-info.outputs.version }}"
-          git push
+          name: template-vars
+      - timeout-minutes: 1
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: mise run ci:create-package-manager-pr "${{ matrix.target.repo }}" "${{ matrix.target.file }}"
