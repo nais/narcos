@@ -115,6 +115,7 @@ jobs:
           path: release_artifacts
       - run: mise run ci:generate-checksums ./release_artifacts/ > ./release_artifacts/checksums.txt
       - uses: softprops/action-gh-release@v2
+        id: release
         with:
           tag_name: ${{ needs.release-info.outputs.version }}
           body: ${{ needs.release-info.outputs.changelog }}
