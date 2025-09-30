@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+#MISE description="Package the Narc CLI binary as a Debian package"
+#MISE depends=["build", "completions"]
+set -euo pipefail
+
+arch="$GOARCH"
+ARCH="$arch" GOARCH="" GOOS="" go tool github.com/goreleaser/nfpm/v2/cmd/nfpm package \
+  --packager deb \
+  --config .nfpm.yaml \
+  --target narc-cli_"$arch".deb
