@@ -15,9 +15,9 @@ if [[ "$GOOS" == "windows" ]]; then
     echo "$SIGN_CERT" > nais.crt
     echo "$SIGN_KEY" > nais.key
 
-    osslsigncode sign -certs nais.crt -key nais.key -n "nais-cli" -i "https://docs.nais.io/cli" -verbose -in "bin/$binary" -out "bin/nais-signed"
-    mv "bin/nais-signed" "bin/$binary"
+    osslsigncode sign -certs nais.crt -key nais.key -n "narc-cli" -i "https://github.com/nais/narcos" -verbose -in "bin/$binary" -out "bin/narc-signed"
+    mv "bin/narc-signed" "bin/$binary"
   fi
 fi
 
-tar -zcf "nais-cli_${GOOS}_${GOARCH}.tgz" ./completions -C bin/ "$binary"
+tar -zcf "narc-cli_${GOOS}_${GOARCH}.tgz" ./completions -C bin/ "$binary"
