@@ -34,11 +34,12 @@ jobs:
       fail-fast: false
       matrix:
         mise-task:
-          - check:staticcheck
-          - check:govulncheck
           - check:deadcode
+          - check:golangci-lint
           - check:gosec
           - check:govet
+          - check:govulncheck
+          - check:staticcheck
           - ci:fmt
           - test
     runs-on: ubuntu-latest
