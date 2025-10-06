@@ -19,7 +19,7 @@ require (
 	github.com/nais/naistrix v0.8.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/sync v0.17.0
-	google.golang.org/api v0.250.0
+	google.golang.org/api v0.251.0
 	google.golang.org/grpc v1.75.1
 	k8s.io/client-go v0.34.1
 	k8s.io/klog/v2 v2.130.1
