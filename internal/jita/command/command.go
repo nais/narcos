@@ -28,7 +28,7 @@ func list(parentFlags *flag.Jita) *naistrix.Command {
 		Title:       "List active and potential privilege elevations",
 		Description: "To include the roles associated with each entitlement in the output, use verbose (-v) mode.",
 		Flags:       flags,
-		RunFunc: func(ctx context.Context, out *naistrix.OutputWriter, _ []string) error {
+		RunFunc: func(ctx context.Context, _ *naistrix.Arguments, out *naistrix.OutputWriter) error {
 			return jita.List(ctx, flags, out)
 		},
 	}
@@ -50,8 +50,8 @@ func grant(parentFlags *flag.Jita) *naistrix.Command {
 			{Name: "entitlement"},
 			{Name: "tenant"},
 		},
-		RunFunc: func(ctx context.Context, out *naistrix.OutputWriter, args []string) error {
-			return jita.Grant(ctx, flags, args[0], args[1])
+		RunFunc: func(ctx context.Context, args *naistrix.Arguments, out *naistrix.OutputWriter) error {
+			return jita.Grant(ctx, flags, args.Get("entitlement"), args.Get("tenant"))
 		},
 	}
 }

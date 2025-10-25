@@ -30,7 +30,7 @@ func list(parentFlags *flag.TenantFlags) *naistrix.Command {
 		Name:  "list",
 		Title: "List tenants.",
 		Flags: flags,
-		RunFunc: func(ctx context.Context, out *naistrix.OutputWriter, args []string) error {
+		RunFunc: func(ctx context.Context, _ *naistrix.Arguments, out *naistrix.OutputWriter) error {
 			tenants, err := naisdevice.ListTenants(ctx)
 			if err != nil {
 				return err
@@ -51,8 +51,8 @@ func set(parentFlags *flag.TenantFlags) *naistrix.Command {
 		Args: []naistrix.Argument{
 			{Name: "tenant"},
 		},
-		AutoCompleteFunc: func(ctx context.Context, args []string, toComplete string) ([]string, string) {
-			if len(args) >= 1 {
+		AutoCompleteFunc: func(ctx context.Context, args *naistrix.Arguments, toComplete string) ([]string, string) {
+			if args.Len() >= 1 {
 				return nil, ""
 			}
 
@@ -63,25 +63,26 @@ func set(parentFlags *flag.TenantFlags) *naistrix.Command {
 
 			return tenants, "Choose the tenant to set as active."
 		},
-		ValidateFunc: func(ctx context.Context, args []string) error {
+		ValidateFunc: func(ctx context.Context, args *naistrix.Arguments) error {
 			tenants, err := naisdevice.ListTenants(ctx)
 			if err != nil {
 				return err
 			}
 
-			if !slices.Contains(tenants, args[0]) {
-				return naistrix.Errorf("Unknown tenant %q. Valid tenants: %s", args[0], strings.Join(tenants, ", "))
+			if tenant := args.Get("tenant"); !slices.Contains(tenants, tenant) {
+				return naistrix.Errorf("Unknown tenant %q. Valid tenants: %s", tenant, strings.Join(tenants, ", "))
 			}
 
 			return nil
 		},
 		Flags: flags,
-		RunFunc: func(ctx context.Context, out *naistrix.OutputWriter, args []string) error {
-			if err := naisdevice.SetTenant(ctx, args[0]); err != nil {
+		RunFunc: func(ctx context.Context, args *naistrix.Arguments, out *naistrix.OutputWriter) error {
+			tenant := args.Get("tenant")
+			if err := naisdevice.SetTenant(ctx, tenant); err != nil {
 				return err
 			}
 
-			out.Println("Tenant has been set to ", args[0])
+			out.Printf("Tenant has been set to %q\n", tenant)
 			return nil
 		},
 	}
@@ -93,7 +94,7 @@ func get(parentFlags *flag.TenantFlags) *naistrix.Command {
 		Name:  "get",
 		Title: "Get the active tenant.",
 		Flags: flags,
-		RunFunc: func(ctx context.Context, out *naistrix.OutputWriter, args []string) error {
+		RunFunc: func(ctx context.Context, _ *naistrix.Arguments, out *naistrix.OutputWriter) error {
 			tenant, err := naisdevice.GetTenant(ctx)
 			if err != nil {
 				return err
