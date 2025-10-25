@@ -43,7 +43,7 @@ func SetTenant(ctx context.Context, tenant string) error {
 	}
 
 	client := pb.NewDeviceAgentClient(connection)
-	defer connection.Close()
+	defer func() { _ = connection.Close() }()
 
 	// TODO: naisdevice gir ikke feil hvis man gir den en tenants som ikke er gyldig
 	_, err = client.SetActiveTenant(ctx, &pb.SetActiveTenantRequest{Name: tenant})
@@ -61,7 +61,7 @@ func agentStatus(ctx context.Context) (*pb.AgentStatus, error) {
 	}
 
 	client := pb.NewDeviceAgentClient(connection)
-	defer connection.Close()
+	defer func() { _ = connection.Close() }()
 
 	sc, err := client.Status(ctx, &pb.AgentStatusRequest{
 		KeepConnectionOnComplete: true,
