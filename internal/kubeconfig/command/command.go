@@ -22,7 +22,7 @@ func Kubeconfig(globalFlags *naistrix.GlobalFlags) *naistrix.Command {
 			nais login
 		`),
 		Flags: flags,
-		RunFunc: func(ctx context.Context, out *naistrix.OutputWriter, args []string) error {
+		RunFunc: func(ctx context.Context, _ *naistrix.Arguments, _ *naistrix.OutputWriter) error {
 			email, err := gcp.ValidateAndGetUserLogin(ctx, true)
 			if err != nil {
 				return err
