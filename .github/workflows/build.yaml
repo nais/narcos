@@ -65,7 +65,7 @@ jobs:
           SIGN_CERT: ${{ secrets.SIGN_CERT }}
           SIGN_KEY: ${{ secrets.SIGN_KEY }}
         run: mise run ci:build
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: archive-${{ matrix.os }}-${{ matrix.arch }}
           path: narc-cli_${{ matrix.os }}_${{ matrix.arch }}.tgz
@@ -86,7 +86,7 @@ jobs:
           VERSION: ${{ needs.release-info.outputs.version }}
           GOARCH: ${{ matrix.arch }}
         run: mise run package-deb
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: deb-${{ matrix.arch }}
           path: narc-cli_${{ matrix.arch }}.deb
@@ -109,7 +109,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: jdx/mise-action@v3
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           merge-multiple: true
           path: release_artifacts
@@ -128,7 +128,7 @@ jobs:
         run: |
           echo '${{ steps.release.outputs.assets }}' > assets.json
           mise run ci:prepare-template-vars ./release_artifacts/checksums.txt ./assets.json -v > template.vars
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: template-vars
           path: ./template.vars
@@ -152,10 +152,10 @@ jobs:
           service_account: gh-narcos@nais-io.iam.gserviceaccount.com
           token_format: access_token
       - uses: google-github-actions/setup-gcloud@v3
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           name: deb-arm64
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           name: deb-amd64
       - env:
@@ -187,7 +187,7 @@ jobs:
           private-key: "${{ secrets.NAIS_APP_PRIVATE_KEY }}"
           app-id: "${{ secrets.NAIS_APP_ID }}"
           repo: ${{ matrix.target.repo }}
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           name: template-vars
       - timeout-minutes: 1
