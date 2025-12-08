@@ -8,12 +8,13 @@ on:
 concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
+permissions:
+  contents: read
 jobs:
   release-info:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      issues: write
       pull-requests: write
     outputs:
       version: ${{ steps.release-info.outputs.version }}
@@ -25,6 +26,8 @@ jobs:
       - uses: jdx/mise-action@v3
       - id: release-info
         run: mise run ci:release-info
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   checks:
     strategy:
       fail-fast: false
@@ -48,8 +51,6 @@ jobs:
       - run: mise run ${{ matrix.mise-task }}
   builds:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -73,8 +74,6 @@ jobs:
           if-no-files-found: error
   package-deb:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -93,12 +92,13 @@ jobs:
           path: narc-cli_${{ matrix.arch }}.deb
           if-no-files-found: error
   branch-protection-checkpoint:
+    if: ${{ always() }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     needs: [checks, builds, package-deb]
     steps:
-      - run: echo "Checks and builds passed :rocket:"
+      - if: ${{ needs.checks.result != 'success' || needs.builds.result != 'success' || needs.package-deb.result != 'success' }}
+        run: exit 1
+      - run: echo "All checks and builds passed."
   release-github:
     if: github.ref == 'refs/heads/main' && needs.release-info.outputs.changelog != '' && needs.release-info.outputs.version != ''
     runs-on: ubuntu-latest
