@@ -173,9 +173,11 @@ jobs:
       fail-fast: false
       matrix:
         target:
-          - repo: nur
+          - owner: nais
+            repo: nur
             file: pkgs/narc-cli.nix
-          - repo: homebrew-tap
+          - owner: nais
+            repo: homebrew-tap
             file: Formula/narc.rb
     permissions:
       contents: read
@@ -195,4 +197,4 @@ jobs:
       - timeout-minutes: 1
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
-        run: mise run ci:create-package-manager-pr "${{ matrix.target.repo }}" "${{ matrix.target.file }}"
+        run: mise run ci:create-package-manager-pr "${{ matrix.target.owner }}/${{ matrix.target.repo }}" "${{ matrix.target.file }}"
