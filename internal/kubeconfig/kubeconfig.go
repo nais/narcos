@@ -39,7 +39,7 @@ func CreateKubeconfig(ctx context.Context, email string, opts ...FilterOption) e
 		config.Clusters = map[string]*api.Cluster{}
 	}
 
-	fmt.Println("Retreiving clusters")
+	fmt.Println("Retrieving clusters")
 	clusters, err := getClustersFromGCP(ctx, options)
 	if err != nil {
 		return err
