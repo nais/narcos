@@ -92,6 +92,8 @@ delete_logs() {
 show_usage() {
   echo "Usage: $0 <command> [options]"
   echo ""
+	echo "We're running one Loki per cluster, so remember to run against the correct instance"
+	echo ""
   echo "Commands:"
   echo "  delete <namespace> <app_name> <days_since> [\"<additional_filters>\"] [\"<regex_pattern>\"]"
   echo "         Delete logs matching the specified criteria"
