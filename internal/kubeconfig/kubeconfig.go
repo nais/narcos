@@ -3,7 +3,6 @@ package kubeconfig
 import (
 	"context"
 	"fmt"
-	"os"
 	"os/exec"
 	"slices"
 
@@ -69,8 +68,8 @@ func CreateKubeconfig(ctx context.Context, email string, opts ...FilterOption) e
 		}
 		_, err = exec.LookPath(user.Exec.Command)
 		if err != nil {
-			fmt.Printf("%v\nWARNING: %v not found in PATH.\n", os.Stderr, user.Exec.Command)
-			fmt.Printf("%v\n%v\n", os.Stderr, user.Exec.InstallHint)
+			fmt.Printf("%v\nWARNING: %v not found in PATH.\n", err, user.Exec.Command)
+			fmt.Printf("%v\n%v\n", err, user.Exec.InstallHint)
 		}
 	}
 	return nil
