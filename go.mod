@@ -1,6 +1,6 @@
 module github.com/nais/narcos
 
-go 1.25.5
+go 1.26
 
 tool (
 	github.com/goreleaser/nfpm/v2/cmd/nfpm
