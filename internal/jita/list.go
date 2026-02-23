@@ -95,14 +95,14 @@ func getEntitlementsForTenant(ctx context.Context, username, tenant string) ([]*
 		return nil, fmt.Errorf("GCP error fetching tenant metadata: %w", err)
 	}
 
-	resp, err := gcp.ListEntitlements(ctx, metadata.NaisFolderID)
+	gcpEntitlements, err := gcp.ListEntitlements(ctx, metadata.NaisFolderID)
 	if err != nil {
 		return nil, fmt.Errorf("GCP error listing entitlements: %w", err)
 	}
 
-	entitlements := make([]*Entitlement, len(resp.Entitlements))
-	for i, ent := range resp.Entitlements {
-		grants, err := ent.ListActiveGrants(ctx, username)
+	entitlements := make([]*Entitlement, len(gcpEntitlements))
+	for i, ent := range gcpEntitlements {
+		grants, err := gcp.ListActiveGrants(ctx, ent.GetName(), username)
 		if err != nil {
 			return nil, fmt.Errorf("fetching active grants: %w", err)
 		}

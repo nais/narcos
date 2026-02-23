@@ -25,7 +25,7 @@ func Grant(ctx context.Context, flags *flag.Grant, entitlementName, tenantName s
 		return fmt.Errorf("listing entitlements: %w", err)
 	}
 
-	entitlement := entitlements.GetByName(entitlementName)
+	entitlement := gcp.GetEntitlementByName(entitlements, entitlementName)
 	if entitlement == nil {
 		return fmt.Errorf("entitlement with name %q does not exist for this tenant", entitlementName)
 	}
@@ -97,9 +97,7 @@ func Grant(ctx context.Context, flags *flag.Grant, entitlementName, tenantName s
 	fmt.Println()
 	fmt.Println("Elevating privileges...")
 
-	grant := gcp.NewGrant(flags.Duration, flags.Reason)
-
-	err = gcp.ElevatePrivileges(ctx, *entitlement, grant)
+	err = gcp.ElevatePrivileges(ctx, *entitlement, flags.Duration, flags.Reason)
 	if err != nil {
 		return fmt.Errorf("GCP error requesting grant: %w", err)
 	}

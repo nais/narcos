@@ -74,15 +74,6 @@ func shellCommandOutput(ctx context.Context, name string, args ...string) (strin
 	return token, nil
 }
 
-func GCloudAccessToken(ctx context.Context) (string, error) {
-	token, err := shellCommandOutput(ctx, "gcloud", "auth", "print-access-token")
-	if err != nil {
-		return token, fmt.Errorf("`gcloud auth print-access-token` failed: %w", err)
-	}
-
-	return token, nil
-}
-
 func GCloudActiveUser(ctx context.Context) (string, error) {
 	return shellCommandOutput(ctx, "gcloud", "auth", "list", "--filter", "status:ACTIVE", "--format", "value(account)")
 }
