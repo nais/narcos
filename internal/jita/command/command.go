@@ -5,6 +5,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/nais/naistrix"
+	"github.com/nais/narcos/internal/gcp"
 	"github.com/nais/narcos/internal/jita"
 	"github.com/nais/narcos/internal/jita/command/flag"
 )
@@ -70,6 +71,21 @@ func revoke(parentFlags *flag.Jita) *naistrix.Command {
 		Args: []naistrix.Argument{
 			{Name: "entitlement"},
 			{Name: "tenant"},
+		},
+		AutoCompleteFunc: func(ctx context.Context, args *naistrix.Arguments, toComplete string) ([]string, string) {
+			switch args.Len() {
+			case 0:
+				// Can't complete entitlements without knowing the tenant.
+				return nil, "Specify the entitlement name (use 'narc jita list <tenant>' to see available entitlements)."
+			case 1:
+				tenants, err := gcp.FetchAllTenantNames(ctx)
+				if err != nil {
+					return nil, "Unable to list tenants for autocomplete."
+				}
+				return tenants, "Choose the tenant."
+			default:
+				return nil, ""
+			}
 		},
 		RunFunc: func(ctx context.Context, args *naistrix.Arguments, out *naistrix.OutputWriter) error {
 			return jita.Revoke(ctx, flags, args.Get("entitlement"), args.Get("tenant"))
