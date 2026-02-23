@@ -36,6 +36,24 @@ func list(parentFlags *flag.Jita) *naistrix.Command {
 	}
 }
 
+// completeEntitlementAndTenant provides autocomplete for the (entitlement, tenant) positional args
+// used by both grant and revoke commands.
+func completeEntitlementAndTenant(ctx context.Context, args *naistrix.Arguments, _ string) ([]string, string) {
+	switch args.Len() {
+	case 0:
+		// Can't complete entitlements without knowing the tenant.
+		return nil, "Specify the entitlement name (use 'narc jita list <tenant>' to see available entitlements)."
+	case 1:
+		tenants, err := gcp.FetchAllTenantNames(ctx)
+		if err != nil {
+			return nil, "Unable to list tenants for autocomplete."
+		}
+		return tenants, "Choose the tenant."
+	default:
+		return nil, ""
+	}
+}
+
 func grant(parentFlags *flag.Jita) *naistrix.Command {
 	flags := &flag.Grant{Jita: parentFlags}
 	return &naistrix.Command{
@@ -47,7 +65,8 @@ func grant(parentFlags *flag.Jita) *naistrix.Command {
 			DURATION is the amount of time you need privileges for, given as "0h0m"
 			REASON is a human-readable description of why you need to elevate privileges.
 		`),
-		Flags: flags,
+		Flags:            flags,
+		AutoCompleteFunc: completeEntitlementAndTenant,
 		Args: []naistrix.Argument{
 			{Name: "entitlement"},
 			{Name: "tenant"},
@@ -67,25 +86,11 @@ func revoke(parentFlags *flag.Jita) *naistrix.Command {
 			ENTITLEMENT is one the entitlements given by "narc jita list TENANT"
 			TENANT is one of the tenants given by "narc tenant list"
 		`),
-		Flags: flags,
+		Flags:            flags,
+		AutoCompleteFunc: completeEntitlementAndTenant,
 		Args: []naistrix.Argument{
 			{Name: "entitlement"},
 			{Name: "tenant"},
-		},
-		AutoCompleteFunc: func(ctx context.Context, args *naistrix.Arguments, toComplete string) ([]string, string) {
-			switch args.Len() {
-			case 0:
-				// Can't complete entitlements without knowing the tenant.
-				return nil, "Specify the entitlement name (use 'narc jita list <tenant>' to see available entitlements)."
-			case 1:
-				tenants, err := gcp.FetchAllTenantNames(ctx)
-				if err != nil {
-					return nil, "Unable to list tenants for autocomplete."
-				}
-				return tenants, "Choose the tenant."
-			default:
-				return nil, ""
-			}
 		},
 		RunFunc: func(ctx context.Context, args *naistrix.Arguments, out *naistrix.OutputWriter) error {
 			return jita.Revoke(ctx, flags, args.Get("entitlement"), args.Get("tenant"))
