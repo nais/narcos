@@ -237,6 +237,28 @@ func ListActiveGrants(ctx context.Context, entitlementName string, userName stri
 	return grants, nil
 }
 
+// RevokeGrant revokes an active grant, ending the privilege elevation early.
+func RevokeGrant(ctx context.Context, grantName string, reason string) error {
+	client, err := NewPAMClient(ctx)
+	if err != nil {
+		return fmt.Errorf("creating PAM client: %w", err)
+	}
+	defer func() { _ = client.Close() }()
+
+	req := &pb.RevokeGrantRequest{
+		Name:   grantName,
+		Reason: reason,
+	}
+
+	op, err := client.RevokeGrant(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	_, err = op.Wait(ctx)
+	return err
+}
+
 // ElevatePrivileges requests a "grant" for the "entitlement" at Google APIs.
 func ElevatePrivileges(ctx context.Context, ent Entitlement, duration time.Duration, justification string) error {
 	client, err := NewPAMClient(ctx)
