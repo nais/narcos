@@ -17,6 +17,7 @@ func Jita(globalFlags *naistrix.GlobalFlags) *naistrix.Command {
 		SubCommands: []*naistrix.Command{
 			list(jitaFlags),
 			grant(jitaFlags),
+			revoke(jitaFlags),
 		},
 	}
 }
@@ -52,6 +53,26 @@ func grant(parentFlags *flag.Jita) *naistrix.Command {
 		},
 		RunFunc: func(ctx context.Context, args *naistrix.Arguments, out *naistrix.OutputWriter) error {
 			return jita.Grant(ctx, flags, args.Get("entitlement"), args.Get("tenant"))
+		},
+	}
+}
+
+func revoke(parentFlags *flag.Jita) *naistrix.Command {
+	flags := &flag.Revoke{Jita: parentFlags}
+	return &naistrix.Command{
+		Name:  "revoke",
+		Title: "Revoke an active privilege elevation.",
+		Description: heredoc.Doc(`
+			ENTITLEMENT is one the entitlements given by "narc jita list TENANT"
+			TENANT is one of the tenants given by "narc tenant list"
+		`),
+		Flags: flags,
+		Args: []naistrix.Argument{
+			{Name: "entitlement"},
+			{Name: "tenant"},
+		},
+		RunFunc: func(ctx context.Context, args *naistrix.Arguments, out *naistrix.OutputWriter) error {
+			return jita.Revoke(ctx, flags, args.Get("entitlement"), args.Get("tenant"))
 		},
 	}
 }
