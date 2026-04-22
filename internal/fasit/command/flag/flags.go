@@ -4,7 +4,7 @@ import "github.com/nais/naistrix"
 
 type Fasit struct {
 	*naistrix.GlobalFlags
-	Output     string `name:"output" short:"o" usage:"Output |format|. Valid values: table, json, yaml."`
+	Output string `name:"output" short:"o" usage:"Output |format|. Valid values: table, json, yaml."`
 }
 
 type TenantsList struct {
