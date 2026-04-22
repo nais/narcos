@@ -11,12 +11,12 @@ import (
 )
 
 const (
-	OAuthTokenEndpoint = "https://oauth2.googleapis.com/token"
+	OAuthTokenEndpoint = "https://oauth2.googleapis.com/token" // #nosec G101 -- not a credential
 	OAuthAuthEndpoint  = "https://accounts.google.com/o/oauth2/v2/auth"
 	OAuthScopes        = "openid email"
 	OAuthRedirectURI   = "http://localhost:4444"
 
-	tokenStoreRelativePath = ".config/narc/fasit-token.json"
+	tokenStoreRelativePath = ".config/narc/fasit-token.json" // #nosec G101 -- not a credential
 )
 
 var (

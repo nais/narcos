@@ -129,7 +129,7 @@ func (t *iapTransport) fetchToken(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("exchange refresh token for ID token: %w", err)
 	}
-	defer response.Body.Close()
+	defer func() { _ = response.Body.Close() }()
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {

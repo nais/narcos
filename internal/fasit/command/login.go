@@ -113,14 +113,14 @@ func loginCmd(_ *flag.Fasit) *naistrix.Command {
 }
 
 func startOAuthCallbackServer(ctx context.Context, expectedState string) (<-chan oauthCallbackResult, func(), error) {
-	listener, err := net.Listen("tcp", ":4444")
+	listener, err := net.Listen("tcp", "127.0.0.1:4444")
 	if err != nil {
-		return nil, nil, fmt.Errorf("listen for OAuth callback on :4444: %w", err)
+		return nil, nil, fmt.Errorf("listen for OAuth callback on 127.0.0.1:4444: %w", err)
 	}
 
 	results := make(chan oauthCallbackResult, 1)
 	mux := http.NewServeMux()
-	server := &http.Server{Handler: mux}
+	server := &http.Server{Handler: mux, ReadHeaderTimeout: 10 * time.Second}
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
@@ -188,7 +188,7 @@ func exchangeAuthorizationCode(ctx context.Context, code, codeVerifier string) (
 	if err != nil {
 		return nil, fmt.Errorf("exchange authorization code for tokens: %w", err)
 	}
-	defer response.Body.Close()
+	defer func() { _ = response.Body.Close() }()
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
@@ -222,7 +222,7 @@ func openBrowser(ctx context.Context, authURL string) error {
 		return fmt.Errorf("unsupported platform %q", runtime.GOOS)
 	}
 
-	return exec.CommandContext(ctx, command, authURL).Run()
+	return exec.CommandContext(ctx, command, authURL).Run() // #nosec G204 -- command is a fixed platform binary
 }
 
 func randomBase64URL(size int) (string, error) {
