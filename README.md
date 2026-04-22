@@ -35,6 +35,58 @@ mise run build # build the CLI
 source <(./bin/narc completion zsh|bash|fish|powershell)
 ```
 
+## Fasit
+
+The `narc fasit` command group provides tools to inspect and manage Fasit configurations. Run `narc fasit login` to authenticate.
+
+### Common Flags
+
+- `--output json|yaml`: Set output format for automation or deep inspection.
+
+### Examples
+
+#### Inspecting Tenants and Environments
+
+```bash
+# List all tenants
+narc fasit tenants list
+
+# Get details for a specific tenant
+narc fasit tenant get my-tenant
+
+# Inspect a specific environment
+narc fasit env get my-tenant prod
+```
+
+#### Working with Features
+
+```bash
+# Get status of a feature across all environments
+narc fasit feature status my-feature
+
+# Get configuration for a feature in an environment
+narc fasit env feature get my-tenant prod my-feature
+
+# View rollout logs and helm diff for an environment feature
+narc fasit env feature logs my-tenant prod my-feature
+
+# View computed helm values
+narc fasit env feature helm my-tenant prod my-feature
+```
+
+#### Rollouts and Auditing
+
+```bash
+# List recent rollouts
+narc fasit rollouts list
+
+# Get details for a specific rollout
+narc fasit rollout get my-feature 1.2.3
+
+# Check audit history (note: currently a placeholder)
+narc fasit env feature audit my-tenant prod my-feature
+```
+
 ## Contributing
 
 This repo uses [Conventional Commits](https://www.conventionalcommits.org/). Please read up on how to format your commit messages. Please see the [pre-commit hook](script/semantic-commit-hook.sh) to see which types we allow.
