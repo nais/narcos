@@ -69,27 +69,38 @@ func Run(ctx context.Context, opts Options) error {
 
 	fmt.Fprintf(os.Stderr, "Creating debug container %q in pod %s/%s...\n", containerName, opts.Namespace, opts.PodName)
 
-	_, err = PatchEphemeralContainer(ctx, typedClient, pod, ec)
-	if err != nil {
+	const maxRetries = 5
+	var kyvernoCRDChecked bool
+	for attempt := range maxRetries + 1 {
+		_, err = PatchEphemeralContainer(ctx, typedClient, pod, ec)
+		if err == nil {
+			break
+		}
+
 		violations := ParseKyvernoDenial(err)
 		if len(violations) == 0 {
 			return fmt.Errorf("creating ephemeral container: %w", err)
 		}
 
-		if !KyvernoCRDExists(ctx, dynClient) {
-			return fmt.Errorf("kyverno denied the request but PolicyException CRD not found — cannot create exception: %w", err)
+		if attempt == maxRetries {
+			break
+		}
+
+		if !kyvernoCRDChecked {
+			if !KyvernoCRDExists(ctx, dynClient) {
+				return fmt.Errorf("kyverno denied the request but PolicyException CRD not found — cannot create exception: %w", err)
+			}
+			kyvernoCRDChecked = true
 		}
 
 		pe := BuildPolicyException(pod, violations)
 		if createErr := CreatePolicyException(ctx, dynClient, pe); createErr != nil {
 			return fmt.Errorf("creating PolicyException: %w", createErr)
 		}
-		fmt.Fprintf(os.Stderr, "Created PolicyException for %d policy violation(s), retrying...\n", len(violations))
-
-		_, err = PatchEphemeralContainer(ctx, typedClient, pod, ec)
-		if err != nil {
-			return fmt.Errorf("creating ephemeral container after PolicyException: %w", err)
-		}
+		fmt.Fprintf(os.Stderr, "Created PolicyException for %d policy violation(s), retrying (%d/%d)...\n", len(violations), attempt+1, maxRetries)
+	}
+	if err != nil {
+		return fmt.Errorf("creating ephemeral container after %d retries: %w", maxRetries, err)
 	}
 
 	fmt.Fprintf(os.Stderr, "Waiting for container to start...\n")

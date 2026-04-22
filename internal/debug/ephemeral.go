@@ -54,7 +54,8 @@ func BuildEphemeralContainer(name, image, targetContainer string, caps []corev1.
 			Stdin: true,
 			TTY:   true,
 			SecurityContext: &corev1.SecurityContext{
-				RunAsUser: ptr.To(int64(0)),
+				RunAsUser:    ptr.To(int64(0)),
+				RunAsNonRoot: ptr.To(false),
 				Capabilities: &corev1.Capabilities{
 					Add: caps,
 				},

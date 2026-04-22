@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
@@ -131,6 +132,7 @@ func CreatePolicyException(ctx context.Context, client dynamic.Interface, pe *un
 		if getErr != nil {
 			return fmt.Errorf("getting existing PolicyException: %w", getErr)
 		}
+		mergeExceptions(pe, existing)
 		pe.SetResourceVersion(existing.GetResourceVersion())
 		_, err = client.Resource(policyExceptionGVR).Namespace(ns).Update(ctx, pe, metav1.UpdateOptions{})
 	}
@@ -138,4 +140,64 @@ func CreatePolicyException(ctx context.Context, client dynamic.Interface, pe *un
 		return fmt.Errorf("creating PolicyException: %w", err)
 	}
 	return nil
+}
+
+// mergeExceptions merges exceptions from existing into target, deduplicating
+// by policyName and ruleName.
+func mergeExceptions(target, existing *unstructured.Unstructured) {
+	merged := make(map[string]map[string]struct{})
+	for _, exc := range append(extractExceptions(existing), extractExceptions(target)...) {
+		excMap, ok := exc.(map[string]any)
+		if !ok {
+			continue
+		}
+		policyName, _ := excMap["policyName"].(string)
+		if policyName == "" {
+			continue
+		}
+		if merged[policyName] == nil {
+			merged[policyName] = make(map[string]struct{})
+		}
+		if ruleNames, ok := excMap["ruleNames"].([]any); ok {
+			for _, rn := range ruleNames {
+				if name, ok := rn.(string); ok {
+					merged[policyName][name] = struct{}{}
+				}
+			}
+		}
+	}
+
+	result := make([]any, 0, len(merged))
+	for policyName, rules := range merged {
+		ruleNames := make([]any, 0, len(rules))
+		for rule := range rules {
+			ruleNames = append(ruleNames, rule)
+		}
+		sort.Slice(ruleNames, func(i, j int) bool {
+			return ruleNames[i].(string) < ruleNames[j].(string)
+		})
+		result = append(result, map[string]any{
+			"policyName": policyName,
+			"ruleNames":  ruleNames,
+		})
+	}
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].(map[string]any)["policyName"].(string) < result[j].(map[string]any)["policyName"].(string)
+	})
+
+	if spec, ok := target.Object["spec"].(map[string]any); ok {
+		spec["exceptions"] = result
+	}
+}
+
+func extractExceptions(pe *unstructured.Unstructured) []any {
+	spec, ok := pe.Object["spec"].(map[string]any)
+	if !ok {
+		return nil
+	}
+	exceptions, ok := spec["exceptions"].([]any)
+	if !ok {
+		return nil
+	}
+	return exceptions
 }
