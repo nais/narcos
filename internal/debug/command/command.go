@@ -11,7 +11,7 @@ import (
 )
 
 func Debug(globalFlags *naistrix.GlobalFlags) *naistrix.Command {
-	flags := &flag.Debug{GlobalFlags: globalFlags}
+	flags := flag.NewDebug(globalFlags)
 	return &naistrix.Command{
 		Name:  "debug",
 		Title: "Attach a privileged debug container to a running pod.",
@@ -30,12 +30,12 @@ func Debug(globalFlags *naistrix.GlobalFlags) *naistrix.Command {
 				return nil, "Specify namespace (-n) to get pod completions."
 			}
 
-			typedClient, _, _, err := debug.NewClients(flags.KubeContext)
+			typedClient, _, _, err := debug.NewClients(string(flags.KubeContext))
 			if err != nil {
 				return nil, "Unable to create Kubernetes client for autocomplete."
 			}
 
-			pods, err := typedClient.CoreV1().Pods(flags.Namespace).List(ctx, metav1.ListOptions{
+			pods, err := typedClient.CoreV1().Pods(string(flags.Namespace)).List(ctx, metav1.ListOptions{
 				FieldSelector: "status.phase=Running",
 			})
 			if err != nil {
@@ -61,11 +61,11 @@ func Debug(globalFlags *naistrix.GlobalFlags) *naistrix.Command {
 		RunFunc: func(ctx context.Context, args *naistrix.Arguments, _ *naistrix.OutputWriter) error {
 			return debug.Run(ctx, debug.Options{
 				PodName:         args.Get("pod"),
-				Namespace:       flags.Namespace,
+				Namespace:       string(flags.Namespace),
 				Image:           flags.Image,
 				ExtraCaps:       flags.Cap,
-				TargetContainer: flags.TargetContainer,
-				KubeContext:     flags.KubeContext,
+				TargetContainer: string(flags.TargetContainer),
+				KubeContext:     string(flags.KubeContext),
 			})
 		},
 	}

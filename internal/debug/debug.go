@@ -13,7 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const defaultImage = "europe-north1-docker.pkg.dev/nais-io/nais/images/debug:latest"
+const DefaultImage = "europe-north1-docker.pkg.dev/nais-io/nais/images/debug:latest"
 
 type Options struct {
 	PodName         string
@@ -31,7 +31,7 @@ func Run(ctx context.Context, opts Options) error {
 	}
 
 	if opts.Image == "" {
-		opts.Image = defaultImage
+		opts.Image = DefaultImage
 	}
 
 	typedClient, dynClient, _, err := NewClients(opts.KubeContext)
