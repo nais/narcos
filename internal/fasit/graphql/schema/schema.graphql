@@ -1,0 +1,689 @@
+"""
+Directs the executor to defer this fragment when the `if` argument is true or undefined.
+"""
+directive @defer(
+"""
+Deferred when true or undefined.
+"""
+	if: Boolean
+"""
+Unique name
+"""
+	label: String
+) on FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+"""
+Marks an element of a GraphQL schema as no longer supported.
+"""
+directive @deprecated(
+"""
+Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).
+"""
+	reason: String
+) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE
+
+directive @goField(
+	forceResolver: Boolean
+	name: String
+) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
+
+"""
+Directs the executor to include this field or fragment only when the `if` argument is true.
+"""
+directive @include(
+"""
+Included when true.
+"""
+	if: Boolean!
+) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+"""
+Indicates exactly one field must be supplied and this field must not be `null`.
+"""
+directive @oneOf on INPUT_OBJECT
+
+"""
+Directs the executor to skip this field or fragment when the `if` argument is true.
+"""
+directive @skip(
+"""
+Skipped when true.
+"""
+	if: Boolean!
+) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+"""
+Exposes a URL that specifies the behavior of this scalar.
+"""
+directive @specifiedBy(
+"""
+The URL that specifies the behavior of this scalar.
+"""
+	url: String!
+) on SCALAR
+
+type AuditLog {
+	actor: String!
+	description: String!
+	objectType: String!
+	objectId: String!
+	createdAt: Time!
+}
+
+"""
+The `Boolean` scalar type represents `true` or `false`.
+"""
+scalar Boolean
+
+type Computed {
+	template: String!
+}
+
+type ComputedValue {
+	value: Value!
+	content: RawMessage
+}
+
+enum ConditionStatus {
+	TRUE
+	FALSE
+	UNKNOWN
+}
+
+type Config {
+	type: ConfigType!
+	secret: Boolean!
+}
+
+type ConfigOverride {
+	environment: Environment!
+	keys: [String!]!
+}
+
+enum ConfigSource {
+	GLOBAL
+	ENV
+	HELM
+	UNKNOWN
+}
+
+enum ConfigType {
+	STRING
+	INT
+	BOOL
+	STRING_ARRAY
+}
+
+type Configuration {
+	id: ID!
+	value: Value!
+	content: RawMessage
+	created: Time!
+	source: ConfigSource!
+}
+
+"""
+Configurations contains configuration and computed values for one feature
+"""
+type Configurations {
+	configuration: [Configuration!]!
+	computed: [ComputedValue!]!
+}
+
+type Cost {
+	from: Time!
+	to: Time!
+	series: [CostSeries!]!
+}
+
+input CostFilter {
+	startDate: Time
+	endDate: Time
+}
+
+type CostSeries {
+	tenant: Tenant!
+	data: [Float!]!
+}
+
+input CreateDeploymentInput {
+	chart: String!
+	version: String!
+	description: String!
+	global: Boolean!
+	target: String!
+}
+
+type Dependency {
+	anyOf: [String!]!
+	allOf: [String!]!
+}
+
+type Deployment {
+	id: ID!
+	feature: Feature!
+	target: [EnvironmentLabel!]!
+	created: Time!
+	statuses: [DeploymentStatus!]!
+	description: String
+	ci: Boolean!
+}
+
+type DeploymentStatus {
+	deployment: Deployment!
+	environment: Environment!
+	state: DeploymentStatusState!
+	message: String!
+	lastModified: Time!
+	created: Time!
+	log: RolloutLog
+}
+
+enum DeploymentStatusState {
+	UNKNOWN
+	CREATED
+	PENDING
+	DEPLOYED
+	FAILED
+	DISABLED
+}
+
+type EnvSeries {
+	environment: Environment!
+	data: [Float!]!
+}
+
+type Environment {
+	id: ID!
+	name: String!
+	description: String
+	featureStates: [FeatureState!]!
+	created: Time!
+	lastModified: Time!
+	kind: EnvironmentKind!
+	gcpProjectID: String
+	health: Health!
+	releases: [Release!]!
+	nodes: [KubernetesNode!]!
+	values: [EnvironmentValue!]!
+	tenant: Tenant!
+	warnings: [Warning!]!
+	auditLog(
+		featureName: String
+	): [AuditLog!]!
+	features: [Feature!]!
+	feature(
+		name: String!
+	): Feature!
+	reconcile: Boolean!
+	labels: [EnvironmentLabel!]!
+}
+
+"""
+EnvironmentCreate contains metadata for creating an environment
+"""
+input EnvironmentCreate {
+"""
+EnvironmentCreate contains metadata for creating an environment
+"""
+	name: String!
+"""
+EnvironmentCreate contains metadata for creating an environment
+"""
+	description: String
+"""
+EnvironmentCreate contains metadata for creating an environment
+"""
+	tenantID: ID!
+"""
+EnvironmentCreate contains metadata for creating an environment
+"""
+	kind: EnvironmentKind!
+}
+
+enum EnvironmentKind {
+	TENANT
+	MANAGEMENT
+	ONPREM
+	LEGACY
+}
+
+type EnvironmentLabel {
+	key: String!
+	value: String!
+}
+
+"""
+EnvironmentLabels represents a key => value map.
+"""
+scalar EnvironmentLabels
+
+"""
+UpdateEnvironment contains metadata for updating an environment
+"""
+input EnvironmentUpdate {
+"""
+UpdateEnvironment contains metadata for updating an environment
+"""
+	description: String
+}
+
+type EnvironmentValue {
+	key: String!
+	value: RawMessage!
+	knownUses: Int!
+}
+
+type Feature {
+	name: String!
+	chart: String!
+	version: String!
+	activeVersion: String!
+	source: String!
+	description: String!
+	dependencies: [Dependency!]!
+	environmentKinds: [EnvironmentKind!]!
+	configoverrides: [ConfigOverride!]!
+	configuration: Configurations!
+	specVersion: String!
+	hasDeployments: Boolean!
+	state: FeatureState
+	status: Status
+	histories: [FeatureHistory!]!
+	helmValueDiff: HelmValueDiff!
+}
+
+type FeatureHistory {
+	id: ID!
+	version: String!
+	status: RolloutStatus!
+	created: Time!
+	lastModified: Time!
+	log: [LogLine!]!
+	helmValueDiff: HelmValueDiff!
+}
+
+type FeatureState {
+	id: ID!
+	feature: Feature!
+	enabled: Boolean!
+	created: Time
+	lastModified: Time
+	missingDependencies: [Feature!]!
+	configuration: Configurations!
+}
+
+type FeatureWarning implements Warning{
+	message: String!
+	feature: Feature!
+	environment: Environment!
+}
+
+"""
+The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
+"""
+scalar Float
+
+type Health {
+	reportedAt: Time!
+}
+
+type HelmValueDiff {
+	difference: HelmValueDifference!
+	diff: String!
+}
+
+enum HelmValueDifference {
+	FULL_MATCH
+	SUPERSET_MATCH
+	NO_MATCH
+	INVALID_JSON
+}
+
+"""
+The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as "4") or integer (such as 4) input value will be accepted as an ID.
+"""
+scalar ID
+
+"""
+The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.
+"""
+scalar Int
+
+type KubernetesNode {
+	name: String!
+	kernelVersion: String!
+	osImage: String!
+	containerRuntimeVersion: String!
+	kubeletVersion: String!
+	kubeProxyVersion: String!
+	operatingSystem: String!
+	architecture: String!
+	conditions: [KubernetesNodeCondition!]!
+	allocatable: KubernetesNodeResources!
+	capacity: KubernetesNodeResources!
+	internalIP: String!
+}
+
+type KubernetesNodeCondition {
+	type: KubernetesNodeConditionType!
+	status: ConditionStatus!
+	reason: String!
+	message: String!
+	lastHeartbeat: Time!
+	lastTransition: Time!
+}
+
+enum KubernetesNodeConditionType {
+	READY
+	MEMORY_PRESSURE
+	DISK_PRESSURE
+	PID_PRESSURE
+	NETWORK_UNAVAILABLE
+}
+
+type KubernetesNodeResources {
+	cpu: Int!
+	memory: Int!
+	storage: Int!
+	pods: Int!
+}
+
+type LogLine {
+	id: ID!
+	timestamp: Time!
+	message: String!
+}
+
+"""
+The mutation root for the Fasit GraphQL API.
+"""
+type Mutation {
+	configurationCreate(
+		configuration: NewConfiguration!
+	): Configuration!
+	configurationUpdate(
+		id: ID!
+		configuration: UpdateConfiguration!
+	): Configuration!
+	configurationDelete(
+		id: ID!
+	): Boolean!
+	createDeployment(
+		input: CreateDeploymentInput!
+	): ID!
+	deleteDeployment(
+		deploymentID: ID!
+	): Boolean!
+	environmentCreate(
+		environment: EnvironmentCreate!
+	): Environment!
+"""
+updateEnvironment updates an existing environment
+"""
+	environmentUpdate(
+"""
+id of requested environment.
+"""
+		id: ID!
+"""
+input contains information about the updated environment.
+"""
+		input: EnvironmentUpdate!
+	): Environment!
+"""
+Change the reconcile flag for an environment
+"""
+	environmentSetReconcile(
+		id: ID!
+		reconcile: Boolean!
+	): Environment!
+	featureStateSave(
+		envID: ID!
+		enabled: Boolean!
+		feature: String!
+	): FeatureState!
+	playground(
+		input: PlaygroundInput!
+	): Playground!
+	rolloutMarkFailed(
+		feature: String!
+		version: String!
+	): Rollout!
+	deleteHelmInstall(
+		envID: ID!
+		name: String!
+	): Boolean!
+	tenantCreate(
+		tenant: TenantCreate!
+	): Tenant!
+}
+
+type NaisdWarning implements Warning{
+	message: String!
+	environment: Environment!
+}
+
+input NewConfiguration {
+	environmentID: ID
+	feature: String!
+	description: String
+	key: String!
+	value: RawMessage!
+}
+
+type Playground {
+	result: String
+	errors: [String!]!
+}
+
+input PlaygroundInput {
+	tenantSlug: String!
+	envSlug: String!
+	showSecrets: Boolean
+	includeUnsetConfig: Boolean
+	code: String!
+}
+
+"""
+The query root for the Fasit GraphQL API.
+"""
+type Query {
+	configuration(
+		feature: String!
+		envID: ID
+	): Configurations!
+"""
+Returns the raw helm values for a feature. Requires the feature name, and either the environment ID or the environment and tenant name.
+"""
+	helmValues(
+		feature: String!
+		envID: ID
+		env: String
+		tenant: String
+	): RawMessage!
+	costForTenant(
+		tenantID: ID!
+		filter: CostFilter
+	): TenantCosts!
+	cost(
+		filter: CostFilter
+	): Cost!
+	deployments(
+		feature: String
+	): [Deployment!]!
+	deployment(
+		id: ID!
+	): Deployment!
+	deploymentStatus(
+		deploymentID: ID!
+		environmentID: ID!
+	): DeploymentStatus!
+	features: [Feature!]!
+	feature(
+		name: String!
+	): Feature!
+	history(
+		id: ID!
+	): FeatureHistory!
+	featureState(
+		envID: ID!
+		feature: String!
+	): FeatureState!
+	rollouts(
+		feature: String
+	): [Rollout!]!
+	rollout(
+		feature: String!
+		version: String!
+	): Rollout!
+"""
+tenant returns the given tenant.
+"""
+	tenant(
+"""
+id of the requested tenant.
+"""
+		id: ID
+		slug: String
+	): Tenant!
+	tenants: [Tenant!]!
+"""
+userInfo returns the user.
+"""
+	userInfo: userInfo
+}
+
+"""
+RawMessage represents an arbitrary JSON value.
+"""
+scalar RawMessage
+
+type Release {
+	name: String!
+	feature: Feature
+	version: String!
+	status: String!
+	revision: Int!
+	lastDeployed: Time!
+	created: Time!
+	lastModified: Time!
+}
+
+type Rollout {
+	id: ID!
+	version: String!
+	created: Time!
+	completed: Time
+	status: RolloutStatus!
+	featureName: String!
+	events: [RolloutEvent!]!
+	logs: [RolloutLog!]!
+}
+
+type RolloutEvent {
+	id: ID!
+	failure: Boolean!
+	message: String!
+	created: Time!
+	data: RawMessage
+}
+
+type RolloutLog {
+	id: ID!
+	tenantName: String!
+	environment: String!
+	lines: [LogLine!]!
+}
+
+enum RolloutStatus {
+	UNKNOWN
+	CREATED
+	PENDING
+	DEPLOYED
+	FAILED
+}
+
+type Status {
+	id: ID!
+	environmentID: ID!
+	version: String!
+	status: RolloutStatus!
+	created: Time!
+	lastModified: Time!
+	log: [LogLine!]!
+}
+
+"""
+The `String`scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.
+"""
+scalar String
+
+"""
+The subscription root for the Fasit GraphQL API.
+"""
+type Subscription {
+	logs(
+		environmentID: ID!
+		featureName: String!
+		lastLogID: String
+	): LogLine!
+"""
+Updates notifies whenever a feature state has been changed.
+"""
+	updates: Update!
+}
+
+type Tenant {
+	id: ID!
+	name: String!
+	description: String
+	environments: [Environment!]!
+	environment(
+		id: ID
+		slug: String
+	): Environment!
+	created: Time!
+	lastModified: Time!
+	warnings: [Warning!]!
+}
+
+type TenantCosts {
+	from: Time!
+	to: Time!
+	series: [EnvSeries!]!
+}
+
+input TenantCreate {
+	name: String!
+	description: String
+}
+
+"""
+Time is a string in [RFC 3339](https://rfc-editor.org/rfc/rfc3339.html) format, with sub-second precision added if present.
+"""
+scalar Time
+
+union Update =Status | Configuration | FeatureState
+
+input UpdateConfiguration {
+	description: String
+	value: RawMessage!
+}
+
+type Value {
+	key: String!
+	displayName: String!
+	description: String!
+	required: Boolean!
+	computed: Computed
+	config: Config
+}
+
+interface Warning {
+	message: String!
+}
+
+type userInfo {
+	email: String!
+}

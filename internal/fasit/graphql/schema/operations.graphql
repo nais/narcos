@@ -1,0 +1,309 @@
+# Tenant queries (lightweight - for front page and tenant listing)
+query GetTenants {
+  tenants {
+    id
+    name
+    environments {
+      id
+      name
+      description
+      created
+      lastModified
+      kind
+      gcpProjectID
+      reconcile
+    }
+  }
+}
+
+# Tenant overview (env metadata + feature names only, for tenant page and feature status)
+query GetTenantOverview($slug: String!) {
+  tenant(slug: $slug) {
+    id
+    name
+    environments {
+      id
+      name
+      description
+      created
+      lastModified
+      kind
+      gcpProjectID
+      reconcile
+      features {
+        name
+      }
+    }
+  }
+}
+
+# Single environment with features (for environment/feature pages)
+query GetTenantEnvironment($slug: String!, $env: String!) {
+  tenant(slug: $slug) {
+    id
+    name
+    environment(slug: $env) {
+      id
+      name
+      description
+      created
+      lastModified
+      kind
+      gcpProjectID
+      reconcile
+      features {
+        name
+        environmentKinds
+        state {
+          enabled
+        }
+      }
+      values {
+        key
+        value
+      }
+    }
+  }
+}
+
+# Feature status across all tenants (single query for feature status tab)
+query GetFeatureStatus {
+  tenants {
+    name
+    environments {
+      name
+      kind
+      features {
+        name
+        state {
+          enabled
+        }
+      }
+    }
+  }
+}
+
+# Feature queries
+query GetFeatures {
+  features {
+    name
+    chart
+    version
+    source
+    description
+    environmentKinds
+    dependencies {
+      anyOf
+      allOf
+    }
+  }
+}
+
+# Helm values query  
+query GetHelmValues($feature: String!, $envID: ID, $tenant: String, $env: String) {
+  helmValues(feature: $feature, envID: $envID, tenant: $tenant, env: $env)
+}
+
+# Feature configuration query (on-demand, not cached)
+query GetFeatureConfig($feature: String!, $envID: ID) {
+  configuration(feature: $feature, envID: $envID) {
+    configuration {
+      id
+      value {
+        key
+        displayName
+        description
+        required
+        config {
+          type
+          secret
+        }
+        computed {
+          template
+        }
+      }
+      content
+      source
+    }
+  }
+}
+
+# Rollouts query (with events, no logs)
+query GetRollouts($feature: String!) {
+  rollouts(feature: $feature) {
+    id
+    version
+    created
+    completed
+    status
+    featureName
+    events {
+      id
+      failure
+      message
+    }
+  }
+}
+
+# Single rollout detail (with events + logs per environment)
+query GetRollout($feature: String!, $version: String!) {
+  rollout(feature: $feature, version: $version) {
+    id
+    version
+    created
+    completed
+    status
+    featureName
+    events {
+      id
+      failure
+      message
+      created
+    }
+    logs {
+      tenantName
+      environment
+      lines {
+        timestamp
+        message
+      }
+    }
+  }
+}
+
+# Feature log for a specific tenant/environment (last rollout only)
+query GetFeatureLog($tenant: String!, $env: String!, $feature: String!) {
+  tenant(slug: $tenant) {
+    environment(slug: $env) {
+      feature(name: $feature) {
+        name
+        status {
+          version
+          status
+          lastModified
+          log {
+            timestamp
+            message
+          }
+        }
+        helmValueDiff {
+          difference
+          diff
+        }
+      }
+    }
+  }
+}
+
+# Rollouts listing query (lightweight, for global rollouts page)
+query GetRolloutsList {
+  rollouts {
+    featureName
+    version
+    status
+    created
+    completed
+  }
+}
+
+# Deployments listing query (lightweight, for global rollouts page)
+query GetDeploymentsList {
+  deployments {
+    id
+    feature {
+      name
+      version
+    }
+    target {
+      key
+      value
+    }
+    created
+    ci
+    statuses {
+      state
+    }
+  }
+}
+
+# Deployments for a specific feature (for feature rollouts tab)
+query GetDeployments($feature: String!) {
+  deployments(feature: $feature) {
+    id
+    feature {
+      name
+      version
+    }
+    target {
+      key
+      value
+    }
+    created
+    ci
+    statuses {
+      state
+    }
+  }
+}
+
+# Single deployment detail
+query GetDeploymentDetail($id: ID!) {
+  deployment(id: $id) {
+    id
+    feature {
+      name
+      version
+    }
+    target {
+      key
+      value
+    }
+    created
+    ci
+    description
+    statuses {
+      state
+      message
+      lastModified
+      environment {
+        name
+        tenant {
+          name
+        }
+      }
+    }
+  }
+}
+
+# Configuration mutation
+mutation UpdateConfigurationMutation($id: ID!, $configuration: UpdateConfiguration!) {
+  configurationUpdate(id: $id, configuration: $configuration) {
+    id
+    value {
+      key
+      displayName
+    }
+    content
+  }
+}
+
+# Create configuration override
+mutation CreateConfigurationMutation($configuration: NewConfiguration!) {
+  configurationCreate(configuration: $configuration) {
+    id
+    value {
+      key
+      displayName
+    }
+    content
+    source
+  }
+}
+
+# Toggle feature reconcile state
+mutation SetFeatureStateMutation($envID: ID!, $feature: String!, $enabled: Boolean!) {
+  featureStateSave(envID: $envID, enabled: $enabled, feature: $feature) {
+    id
+    enabled
+  }
+}

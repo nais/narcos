@@ -1,0 +1,12 @@
+schema: internal/fasit/graphql/schema/schema.graphql
+operations:
+  - internal/fasit/graphql/schema/operations.graphql
+generated: internal/fasit/graphql/generated.go
+package: graphql
+optional: pointer
+use_struct_references: true
+bindings:
+  Time:
+    type: string
+  RawMessage:
+    type: encoding/json.RawMessage
