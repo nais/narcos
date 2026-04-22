@@ -23,12 +23,9 @@ func Fasit(globalFlags *naistrix.GlobalFlags) *naistrix.Command {
 		StickyFlags: fasitFlags,
 		SubCommands: []*naistrix.Command{
 			loginCmd(fasitFlags),
-			tenantsCmd(fasitFlags),
 			tenantCmd(fasitFlags),
 			envCmd(fasitFlags),
-			featuresCmd(fasitFlags),
 			featureCmd(fasitFlags),
-			rolloutsCmd(fasitFlags),
 			rolloutCmd(fasitFlags),
 			deploymentCmd(fasitFlags),
 		},

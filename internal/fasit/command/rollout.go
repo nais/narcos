@@ -10,21 +10,12 @@ import (
 	"github.com/nais/narcos/internal/fasit/command/flag"
 )
 
-func rolloutsCmd(parentFlags *flag.Fasit) *naistrix.Command {
-	return &naistrix.Command{
-		Name:  "rollouts",
-		Title: "Inspect rollout history.",
-		SubCommands: []*naistrix.Command{
-			rolloutsListCmd(parentFlags),
-		},
-	}
-}
-
 func rolloutCmd(parentFlags *flag.Fasit) *naistrix.Command {
 	return &naistrix.Command{
 		Name:  "rollout",
-		Title: "Inspect a single rollout.",
+		Title: "Inspect rollouts.",
 		SubCommands: []*naistrix.Command{
+			rolloutsListCmd(parentFlags),
 			rolloutGetCmd(parentFlags),
 		},
 	}

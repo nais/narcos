@@ -60,11 +60,11 @@ func TestFasitSharedFlags(t *testing.T) {
 	})
 
 	t.Run("another read command help shows shared flags", func(t *testing.T) {
-		out := runFasitCommand(t, "fasit", "tenants", "list", "--help")
+		out := runFasitCommand(t, "fasit", "tenant", "list", "--help")
 
 		for _, want := range []string{"--output"} {
 			if !strings.Contains(out, want) {
-				t.Fatalf("tenants list help missing %q\n%s", want, out)
+				t.Fatalf("tenant list help missing %q\n%s", want, out)
 			}
 		}
 	})
@@ -264,12 +264,12 @@ func TestReadCommandFilterFlags(t *testing.T) {
 	}{
 		{
 			name: "tenants list filters",
-			args: []string{"fasit", "tenants", "list", "--help"},
+			args: []string{"fasit", "tenant", "list", "--help"},
 			want: []string{"--tenant", "--kind"},
 		},
 		{
 			name: "features list filters",
-			args: []string{"fasit", "features", "list", "--help"},
+			args: []string{"fasit", "feature", "list", "--help"},
 			want: []string{"--feature", "--kind"},
 		},
 		{
@@ -279,7 +279,7 @@ func TestReadCommandFilterFlags(t *testing.T) {
 		},
 		{
 			name: "rollouts list filters",
-			args: []string{"fasit", "rollouts", "list", "--help"},
+			args: []string{"fasit", "rollout", "list", "--help"},
 			want: []string{"--feature", "--status"},
 		},
 	}

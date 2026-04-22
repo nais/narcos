@@ -12,21 +12,12 @@ import (
 	"github.com/nais/narcos/internal/fasit/command/flag"
 )
 
-func featuresCmd(parentFlags *flag.Fasit) *naistrix.Command {
-	return &naistrix.Command{
-		Name:  "features",
-		Title: "List features.",
-		SubCommands: []*naistrix.Command{
-			featuresListCmd(parentFlags),
-		},
-	}
-}
-
 func featureCmd(parentFlags *flag.Fasit) *naistrix.Command {
 	return &naistrix.Command{
 		Name:  "feature",
-		Title: "Inspect a single feature.",
+		Title: "Inspect features.",
 		SubCommands: []*naistrix.Command{
+			featuresListCmd(parentFlags),
 			featureGetCmd(parentFlags),
 			featureStatusCmd(parentFlags),
 			featureRolloutsCmd(parentFlags),

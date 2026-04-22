@@ -49,7 +49,7 @@ The `narc fasit` command group provides tools to inspect and manage Fasit config
 
 ```bash
 # List all tenants
-narc fasit tenants list
+narc fasit tenant list
 
 # Get details for a specific tenant
 narc fasit tenant get my-tenant
@@ -78,7 +78,7 @@ narc fasit env feature helm my-tenant prod my-feature
 
 ```bash
 # List recent rollouts
-narc fasit rollouts list
+narc fasit rollout list
 
 # Get details for a specific rollout
 narc fasit rollout get my-feature 1.2.3

@@ -9,21 +9,12 @@ import (
 	"github.com/nais/narcos/internal/fasit/command/flag"
 )
 
-func tenantsCmd(parentFlags *flag.Fasit) *naistrix.Command {
-	return &naistrix.Command{
-		Name:  "tenants",
-		Title: "List and inspect tenants.",
-		SubCommands: []*naistrix.Command{
-			tenantsListCmd(parentFlags),
-		},
-	}
-}
-
 func tenantCmd(parentFlags *flag.Fasit) *naistrix.Command {
 	return &naistrix.Command{
 		Name:  "tenant",
-		Title: "Inspect a single tenant.",
+		Title: "Inspect tenants.",
 		SubCommands: []*naistrix.Command{
+			tenantsListCmd(parentFlags),
 			tenantGetCmd(parentFlags),
 		},
 	}
