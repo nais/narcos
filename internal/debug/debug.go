@@ -116,5 +116,5 @@ func Run(ctx context.Context, opts Options) error {
 	}
 	args = append(args, "--", "sh", "-c", "exec $( command -v bash || command -v sh )")
 
-	return syscall.Exec(kubectlPath, args, os.Environ())
+	return syscall.Exec(kubectlPath, args, os.Environ()) // #nosec G204
 }
