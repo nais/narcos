@@ -20,8 +20,8 @@ func Delete(ctx context.Context, flags *flag.Delete, out *naistrix.OutputWriter)
 	if flags.App == "" {
 		return fmt.Errorf("--app is required")
 	}
-	if flags.Days <= 0 {
-		return fmt.Errorf("--days must be a positive integer")
+	if flags.Days <= 0 && flags.StartTime == "" {
+		return fmt.Errorf("One of --start or --days is required")
 	}
 
 	clusterCtx, err := currentContext()
@@ -30,14 +30,13 @@ func Delete(ctx context.Context, flags *flag.Delete, out *naistrix.OutputWriter)
 	}
 
 	fmt.Printf("Current cluster : %s\n", clusterCtx)
-	fmt.Printf("Note            : There is one Loki instance per cluster.\n")
-	fmt.Printf("                  Make sure you are connected to the correct cluster before proceeding.\n\n")
-
-	// Calculate the start timestamp (N days ago).
-	startTS := time.Now().AddDate(0, 0, -flags.Days).Unix()
+	fmt.Printf("Note            : There is one Loki instance per cluster. Make sure you are connected to the correct cluster before proceeding.\n\n")
 
 	// Build the LogQL query.
 	query := fmt.Sprintf(`{service_namespace=%q, service_name=%q}`, flags.Namespace, flags.App)
+	if flags.Contains != "" {
+		query += " " + flags.Contains
+	}
 	if flags.Filter != "" {
 		query += " | " + flags.Filter
 	}
@@ -45,11 +44,35 @@ func Delete(ctx context.Context, flags *flag.Delete, out *naistrix.OutputWriter)
 		query += fmt.Sprintf(` |~ "(?i)%s"`, flags.Regex)
 	}
 
+	var endTS time.Time
+	startTS := time.Now().AddDate(0, 0, -flags.Days)
+
+	if flags.StartTime != "" {
+		var err error
+		startTS, err = time.Parse(time.DateTime, flags.StartTime)
+		if err != nil {
+			return err
+		}
+	}
+
 	encodedQuery := url.QueryEscape(query)
-	deleteURL := fmt.Sprintf("%s/delete?query=%s&start=%d", lokiAPIBase, encodedQuery, startTS)
+	deleteURL := fmt.Sprintf("%s/delete?query=%s&start=%d", lokiAPIBase, encodedQuery, startTS.Unix())
+
+	if flags.EndTime != "" {
+		var err error
+		endTS, err = time.Parse(time.DateTime, flags.EndTime)
+		if err != nil {
+			return err
+		}
+
+		deleteURL = fmt.Sprintf("%s&end=%d", deleteURL, endTS.Unix())
+	}
 
 	fmt.Printf("Deletion query  : %s\n", query)
-	fmt.Printf("Start timestamp : %d (%s)\n", startTS, time.Unix(startTS, 0).Format(time.RFC3339))
+	fmt.Printf("Start timestamp : %s (%d)\n", startTS, startTS.Unix())
+	if flags.EndTime != "" {
+		fmt.Printf("End timestamp   : %s (%d)\n", endTS, endTS.Unix())
+	}
 	fmt.Printf("cURL equivalent : curl -g -X POST %q\n\n", deleteURL)
 
 	ok, err := out.Confirm("Proceed with deletion?")
