@@ -21,7 +21,7 @@ func Delete(ctx context.Context, flags *flag.Delete, out *naistrix.OutputWriter)
 		return fmt.Errorf("--app is required")
 	}
 	if flags.Days <= 0 && flags.StartTime == "" {
-		return fmt.Errorf("One of --start or --days is required")
+		return fmt.Errorf("one of --start or --days is required")
 	}
 
 	clusterCtx, err := currentContext()
