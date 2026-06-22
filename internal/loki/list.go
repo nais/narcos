@@ -42,6 +42,8 @@ func fetchAndPrintDeleteRequests(ctx context.Context) error {
 		return fmt.Errorf("building Loki list request: %w", err)
 	}
 
+	req.Header.Add("X-Scope-OrgID", "tenant")
+
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("fetching Loki delete requests: %w", err)

@@ -29,8 +29,8 @@ func deleteCmd(parentFlags *flag.Loki) *naistrix.Command {
 		Description: heredoc.Doc(`
 			Submits a log deletion request to the Loki compactor for the given application.
 
-			There is one Loki instance per cluster, so make sure your kubeconfig is pointing
-			at the correct cluster before running this command.
+			There is one Loki instance per tenant, so make sure your kubeconfig is pointing
+			at the correct management cluster before running this command.
 
 			The command will port-forward to the Loki compactor (loki-compactor-0:3100 in the
 			nais-system namespace), send the deletion request, and print the updated list of
