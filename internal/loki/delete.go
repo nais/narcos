@@ -37,10 +37,11 @@ func Delete(ctx context.Context, flags *flag.Delete, out *naistrix.OutputWriter)
 	}
 
 	if !strings.Contains(clusterCtx, "management-v2") {
-		fmt.Printf("Current cluster : %s\n", clusterCtx)
-		fmt.Printf("Note            : There is one Loki instance per tenant. Connect to the management cluster before proceeding.\n\n")
+		fmt.Printf("Loki is only accessible from management, you are in %s\n", clusterCtx)
 		return fmt.Errorf("can only delete logs from management")
 	}
+
+	fmt.Printf("Starting port-forward to loki-compactor-0 in %s:nais-system...\n", clusterCtx)
 
 	if !strings.Contains(flags.Query, "k8s_cluster_name") {
 		fmt.Println("No k8s_cluster_name specified, deleting from all clusters")
