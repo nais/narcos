@@ -41,8 +41,6 @@ func Delete(ctx context.Context, flags *flag.Delete, out *naistrix.OutputWriter)
 		return fmt.Errorf("can only delete logs from management")
 	}
 
-	fmt.Printf("Starting port-forward to loki-compactor-0 in %s:nais-system...\n", clusterCtx)
-
 	if !strings.Contains(flags.Query, "k8s_cluster_name") {
 		fmt.Println("No k8s_cluster_name specified, deleting from all clusters")
 	}
@@ -89,7 +87,7 @@ func Delete(ctx context.Context, flags *flag.Delete, out *naistrix.OutputWriter)
 		return nil
 	}
 
-	fmt.Println("\nStarting port-forward to loki-compactor-0 in nais-system...")
+	fmt.Printf("\nStarting port-forward to loki-compactor-0 in %s:nais-system...\n", clusterCtx)
 
 	pf, err := startPortForward()
 	if err != nil {
