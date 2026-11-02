@@ -38,7 +38,7 @@ func deleteCmd(parentFlags *flag.Loki) *naistrix.Command {
 		`),
 		Flags: flags,
 		RunFunc: func(ctx context.Context, _ *naistrix.Arguments, out *naistrix.OutputWriter) error {
-			return loki.Delete(ctx, flags, out)
+			return loki.Delete(ctx, flags)
 		},
 	}
 }

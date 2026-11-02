@@ -63,7 +63,7 @@ func set(parentFlags *flag.TenantFlags) *naistrix.Command {
 
 			return tenants, "Choose the tenant to set as active."
 		},
-		ValidateFunc: func(ctx context.Context, args *naistrix.Arguments) error {
+		ValidateArgsFunc: func(ctx context.Context, args *naistrix.Arguments) error {
 			tenants, err := naisdevice.ListTenants(ctx)
 			if err != nil {
 				return err

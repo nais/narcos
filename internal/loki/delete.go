@@ -9,12 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nais/naistrix"
+	"github.com/nais/naistrix/input"
 	"github.com/nais/narcos/internal/loki/command/flag"
 )
 
 // Delete submits a log deletion request to Loki for the given application.
-func Delete(ctx context.Context, flags *flag.Delete, out *naistrix.OutputWriter) error {
+func Delete(ctx context.Context, flags *flag.Delete) error {
 	if flags.Query == "" {
 		return fmt.Errorf("--query is required")
 	}
@@ -78,10 +78,11 @@ func Delete(ctx context.Context, flags *flag.Delete, out *naistrix.OutputWriter)
 	}
 	fmt.Printf("cURL equivalent : curl -g -X POST %q\n\n", deleteURL)
 
-	ok, err := out.Confirm("Proceed with deletion?")
+	ok, err := input.Confirm("Proceed with deletion?")
 	if err != nil {
 		return err
 	}
+
 	if !ok {
 		fmt.Println("Aborted.")
 		return nil
