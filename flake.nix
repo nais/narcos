@@ -19,19 +19,19 @@
                 final: prev:
                 let
                   version = "1.25.1";
-                  newerGoVersion = prev.go.overrideAttrs (old: {
+                  newerGoVersion = prev.go_latest.overrideAttrs (old: {
                     inherit version;
                     src = prev.fetchurl {
                       url = "https://go.dev/dl/go${version}.src.tar.gz";
                       hash = "sha256-0BDBCc7pTYDv5oHqtGvepJGskGv0ZYPDLp8NuwvRpZQ=";
                     };
                   });
-                  nixpkgsVersion = prev.go.version;
+                  nixpkgsVersion = prev.go_latest.version;
                   newVersionNotInNixpkgs = -1 == builtins.compareVersions nixpkgsVersion version;
                 in
                 {
-                  go = if newVersionNotInNixpkgs then newerGoVersion else prev.go;
-                  buildGoModule = prev.buildGoModule.override { go = final.go; };
+                  go_latest = if newVersionNotInNixpkgs then newerGoVersion else prev.go_latest;
+                  buildGoLatestModule = prev.buildGoLatestModule.override { go = final.go_latest; };
                 }
               )
             ];
@@ -39,18 +39,18 @@
         in
         {
           packages = rec {
-            narc = pkgs.buildGoModule {
+            narc = pkgs.buildGoLatestModule {
               pname = "narc";
               inherit version;
               src = ./.;
-              vendorHash = "sha256-obDGFnDGCZjNP40JUdn8FFAJdSrA9FUzolQLVGITsgk=";
+              vendorHash = "sha256-ZLmOTeEXAdmjl0Ls9PSko3c5ZCz6w6+jo1QNANB0DN4=";
             };
             default = narc;
           };
 
           devShells.default = pkgs.mkShell {
             packages = with pkgs; [
-              go
+              go_latest
               gopls
               gotools
               go-tools
