@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/nais/naistrix"
 )
@@ -17,11 +18,12 @@ func List(ctx context.Context, _ *naistrix.OutputWriter) error {
 		return err
 	}
 
-	fmt.Printf("Current cluster : %s\n", clusterCtx)
-	fmt.Printf("Note            : There is one Loki instance per cluster.\n")
-	fmt.Printf("                  Make sure you are connected to the correct cluster.\n\n")
+	if !strings.Contains(clusterCtx, "management-v2") {
+		fmt.Printf("Loki is only accessible from management, you are in %s\n", clusterCtx)
+		return fmt.Errorf("can only delete logs from management")
+	}
 
-	fmt.Println("Starting port-forward to loki-compactor-0 in nais-system...")
+	fmt.Printf("Starting port-forward to loki-compactor-0 in %s:nais-system...\n", clusterCtx)
 
 	pf, err := startPortForward()
 	if err != nil {
