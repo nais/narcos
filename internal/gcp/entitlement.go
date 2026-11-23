@@ -271,7 +271,8 @@ func RevokeGrant(ctx context.Context, grantName string, reason string) error {
 	return err
 }
 
-// ElevatePrivileges requests a "grant" for the "entitlement" at Google APIs.
+// ElevatePrivileges requests a "grant" for the "entitlement" at Google APIs,
+// and waits for the grant to become active.
 func ElevatePrivileges(ctx context.Context, ent Entitlement, duration time.Duration, justification string) error {
 	client, err := NewPAMClient(ctx)
 	if err != nil {
@@ -291,10 +292,56 @@ func ElevatePrivileges(ctx context.Context, ent Entitlement, duration time.Durat
 		},
 	}
 
-	_, err = client.CreateGrant(ctx, req)
+	grant, err := client.CreateGrant(ctx, req)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return waitForGrantActivation(ctx, client, grant.GetName())
+}
+
+const (
+	grantPollInterval = time.Second
+	grantPollTimeout  = 30 * time.Second
+)
+
+// waitForGrantActivation polls a grant until it reaches a terminal state.
+func waitForGrantActivation(ctx context.Context, client *privilegedaccessmanager.Client, grantName string) error {
+	ctx, cancel := context.WithTimeout(ctx, grantPollTimeout)
+	defer cancel()
+
+	for {
+		grant, err := client.GetGrant(ctx, &pb.GetGrantRequest{Name: grantName})
+		if err != nil {
+			if ctx.Err() != nil {
+				return fmt.Errorf("grant not active after %s, check 'narc jita list' for status", grantPollTimeout)
+			}
+			return fmt.Errorf("polling grant: %w", err)
+		}
+
+		switch grant.GetState() {
+		case pb.Grant_ACTIVE:
+			return nil
+		case pb.Grant_ACTIVATION_FAILED:
+			return fmt.Errorf("activation failed: %s", grantActivationError(grant))
+		case pb.Grant_DENIED, pb.Grant_EXPIRED, pb.Grant_REVOKED, pb.Grant_ENDED, pb.Grant_WITHDRAWN:
+			return fmt.Errorf("grant unexpectedly terminated in state %s", grant.GetState())
+		}
+
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("grant not active after %s (state %s), check 'narc jita list' for status", grantPollTimeout, grant.GetState())
+		case <-time.After(grantPollInterval):
+		}
+	}
+}
+
+// grantActivationError extracts the failure reason from a failed grant's timeline.
+func grantActivationError(grant *pb.Grant) string {
+	for _, event := range grant.GetTimeline().GetEvents() {
+		if failed := event.GetActivationFailed(); failed != nil && failed.GetError() != nil {
+			return failed.GetError().GetMessage()
+		}
+	}
+	return "unknown reason"
 }
