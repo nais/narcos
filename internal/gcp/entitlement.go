@@ -4,13 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
 
 	privilegedaccessmanager "cloud.google.com/go/privilegedaccessmanager/apiv1"
 	pb "cloud.google.com/go/privilegedaccessmanager/apiv1/privilegedaccessmanagerpb"
+	"google.golang.org/api/iterator"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
 
@@ -57,13 +60,18 @@ func FetchAllTenantNames(ctx context.Context) ([]string, error) {
 		return nil, fmt.Errorf("server returned %q", resp.Status)
 	}
 
-	decoder := xml.NewDecoder(resp.Body)
+	return parseTenantNames(resp.Body)
+}
+
+func parseTenantNames(r io.Reader) ([]string, error) {
+	decoder := xml.NewDecoder(r)
 	var bucket bucket
-	err = decoder.Decode(&bucket)
+	err := decoder.Decode(&bucket)
 
 	tenants := make([]string, 0)
 	for _, tenant := range bucket.Contents {
-		if !strings.HasSuffix(tenant.Name, ".json") {
+		// Only top-level <domain>.json files are tenants; subdirectories (e.g. docs/) contain other data.
+		if strings.Contains(tenant.Name, "/") || !strings.HasSuffix(tenant.Name, ".json") {
 			continue
 		}
 		tenants = append(tenants, strings.TrimSuffix(tenant.Name, ".json"))
@@ -185,9 +193,11 @@ func ListEntitlements(ctx context.Context, folderID FolderID) ([]Entitlement, er
 	it := client.SearchEntitlements(ctx, req)
 	for {
 		ent, err := it.Next()
-		if err != nil {
-			// iterator.Done
+		if errors.Is(err, iterator.Done) {
 			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("searching entitlements: %w", err)
 		}
 		entitlements = append(entitlements, Entitlement{ent})
 	}
@@ -227,9 +237,11 @@ func ListActiveGrants(ctx context.Context, entitlementName string, userName stri
 	it := client.ListGrants(ctx, req)
 	for {
 		g, err := it.Next()
-		if err != nil {
-			// iterator.Done
+		if errors.Is(err, iterator.Done) {
 			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("listing grants: %w", err)
 		}
 		grants = append(grants, Grant{g})
 	}
