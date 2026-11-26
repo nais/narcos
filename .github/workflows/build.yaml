@@ -165,20 +165,10 @@ jobs:
         run: |
           gcloud --project nais-io artifacts apt upload nais-ppa --quiet --source narc-cli_arm64.deb --location europe-north1
           gcloud --project nais-io artifacts apt upload nais-ppa --quiet --source narc-cli_amd64.deb --location europe-north1
-  release-external-repos:
+  release-homebrew:
     if: github.ref == 'refs/heads/main'
     needs: [release-github]
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        target:
-          - owner: nais
-            repo: nur
-            file: pkgs/narc-cli.nix
-          - owner: nais
-            repo: homebrew-tap
-            file: Formula/narc.rb
     permissions:
       contents: read
       id-token: write
@@ -190,11 +180,11 @@ jobs:
         with:
           private-key: "${{ secrets.NAIS_APP_PRIVATE_KEY }}"
           app-id: "${{ secrets.NAIS_APP_ID }}"
-          repositories: ${{ matrix.target.repo }}
+          repositories: homebrew-tap
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # ratchet:actions/download-artifact@v8
         with:
           name: template-vars
       - timeout-minutes: 1
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
-        run: mise run ci:create-package-manager-pr "${{ matrix.target.owner }}/${{ matrix.target.repo }}" "${{ matrix.target.file }}"
+        run: mise run ci:create-package-manager-pr nais/homebrew-tap Formula/narc.rb
