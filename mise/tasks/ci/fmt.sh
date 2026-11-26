@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-#MISE description="Format all go code using gofumpt, and fail if any files are not formatted correctly."
-#MISE depends=["fmt"]
+#MISE description="Check that go fix and gofumpt leave the code unchanged"
 set -euo pipefail
 
+mise run gofix
+mise run fmt
+
 if ! git diff --exit-code --name-only; then
-  echo "The file(s) listed above are not formatted correctly. Please run 'mise run fmt' and commit the changes."
+  echo "Run 'mise run gofix' and 'mise run fmt' locally, then review and commit the changes listed above."
   exit 1
 fi
