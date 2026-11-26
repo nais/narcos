@@ -1,12 +1,12 @@
 package gcp_test
 
 import (
+	"slices"
 	"testing"
 	"time"
 
 	pb "cloud.google.com/go/privilegedaccessmanager/apiv1/privilegedaccessmanagerpb"
 	"github.com/nais/narcos/internal/gcp"
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -17,7 +17,9 @@ func TestEntitlementShortName(t *testing.T) {
 			Name: "folders/448765591554/locations/global/entitlements/nais-admin",
 		},
 	}
-	assert.Equal(t, "nais-admin", ent.ShortName())
+	if got, want := ent.ShortName(), "nais-admin"; got != want {
+		t.Errorf("ShortName() = %q, want %q", got, want)
+	}
 }
 
 func TestEntitlementRoles(t *testing.T) {
@@ -36,7 +38,9 @@ func TestEntitlementRoles(t *testing.T) {
 			},
 		},
 	}
-	assert.Equal(t, []string{"roles/storage.admin", "roles/compute.admin"}, ent.Roles())
+	if got, want := ent.Roles(), []string{"roles/storage.admin", "roles/compute.admin"}; !slices.Equal(got, want) {
+		t.Errorf("Roles() = %q, want %q", got, want)
+	}
 }
 
 func TestEntitlementMaxDuration(t *testing.T) {
@@ -46,7 +50,9 @@ func TestEntitlementMaxDuration(t *testing.T) {
 			MaxRequestDuration: durationpb.New(4 * time.Hour),
 		},
 	}
-	assert.Equal(t, 4*time.Hour, ent.MaxDuration())
+	if got, want := ent.MaxDuration(), 4*time.Hour; got != want {
+		t.Errorf("MaxDuration() = %v, want %v", got, want)
+	}
 }
 
 func TestGrantDuration(t *testing.T) {
@@ -55,7 +61,9 @@ func TestGrantDuration(t *testing.T) {
 			RequestedDuration: durationpb.New(24 * time.Hour),
 		},
 	}
-	assert.Equal(t, 24*time.Hour, grant.Duration())
+	if got, want := grant.Duration(), 24*time.Hour; got != want {
+		t.Errorf("Duration() = %v, want %v", got, want)
+	}
 }
 
 func TestGrantTimeRemaining(t *testing.T) {
@@ -67,8 +75,10 @@ func TestGrantTimeRemaining(t *testing.T) {
 		},
 	}
 	remaining := grant.TimeRemaining()
-	// Should be close to 1 hour
-	assert.InDelta(t, time.Hour.Seconds(), remaining.Seconds(), 2)
+	const tolerance = 2 * time.Second
+	if remaining < time.Hour-tolerance || remaining > time.Hour+tolerance {
+		t.Errorf("TimeRemaining() = %v, want %v within %v", remaining, time.Hour, tolerance)
+	}
 }
 
 func TestGetEntitlementByName(t *testing.T) {
@@ -106,20 +116,39 @@ func TestGetEntitlementByName(t *testing.T) {
 		},
 	}
 
-	assert.Len(t, entitlements, 2)
+	if got := len(entitlements); got != 2 {
+		t.Fatalf("got %d entitlements, want 2", got)
+	}
+	if got := entitlements[0].ShortName(); got != "nais-admin" {
+		t.Errorf("entitlements[0].ShortName() = %q, want %q", got, "nais-admin")
+	}
+	if got, want := entitlements[0].Roles(), []string{"roles/storage.admin", "roles/compute.admin"}; !slices.Equal(got, want) {
+		t.Errorf("entitlements[0].Roles() = %q, want %q", got, want)
+	}
+	if got, want := entitlements[0].MaxDuration(), 4*time.Hour; got != want {
+		t.Errorf("entitlements[0].MaxDuration() = %v, want %v", got, want)
+	}
+	if got := entitlements[1].ShortName(); got != "nais-privileged" {
+		t.Errorf("entitlements[1].ShortName() = %q, want %q", got, "nais-privileged")
+	}
+	if got, want := entitlements[1].Roles(), []string{"roles/container.clusterAdmin"}; !slices.Equal(got, want) {
+		t.Errorf("entitlements[1].Roles() = %q, want %q", got, want)
+	}
+	if got, want := entitlements[1].MaxDuration(), 8*time.Hour; got != want {
+		t.Errorf("entitlements[1].MaxDuration() = %v, want %v", got, want)
+	}
 
-	assert.Equal(t, "nais-admin", entitlements[0].ShortName())
-	assert.Equal(t, []string{"roles/storage.admin", "roles/compute.admin"}, entitlements[0].Roles())
-	assert.Equal(t, 4*time.Hour, entitlements[0].MaxDuration())
+	const name = "nais-admin"
+	found := gcp.GetEntitlementByName(entitlements, name)
+	if found == nil {
+		t.Fatalf("GetEntitlementByName(%q) = nil, want an entitlement", name)
+	}
+	if got := found.ShortName(); got != name {
+		t.Errorf("GetEntitlementByName(%q).ShortName() = %q, want %q", name, got, name)
+	}
 
-	assert.Equal(t, "nais-privileged", entitlements[1].ShortName())
-	assert.Equal(t, []string{"roles/container.clusterAdmin"}, entitlements[1].Roles())
-	assert.Equal(t, 8*time.Hour, entitlements[1].MaxDuration())
-
-	found := gcp.GetEntitlementByName(entitlements, "nais-admin")
-	assert.NotNil(t, found)
-	assert.Equal(t, "nais-admin", found.ShortName())
-
-	notFound := gcp.GetEntitlementByName(entitlements, "does-not-exist")
-	assert.Nil(t, notFound)
+	const missingName = "does-not-exist"
+	if got := gcp.GetEntitlementByName(entitlements, missingName); got != nil {
+		t.Errorf("GetEntitlementByName(%q) returned entitlement %q, want nil", missingName, got.ShortName())
+	}
 }
