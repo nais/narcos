@@ -78,7 +78,7 @@ func Delete(ctx context.Context, flags *flag.Delete) error {
 	}
 	fmt.Printf("cURL equivalent : curl -g -X POST %q\n\n", deleteURL)
 
-	ok, err := input.Confirm("Proceed with deletion?")
+	ok, err := input.Confirm(ctx, "Proceed with deletion?")
 	if err != nil {
 		return err
 	}

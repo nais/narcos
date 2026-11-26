@@ -17,7 +17,7 @@ require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/go-logr/logr v1.4.4
 	github.com/nais/device v1.10.4
-	github.com/nais/naistrix v0.47.0
+	github.com/nais/naistrix v0.53.0
 	github.com/stretchr/testify v1.12.1
 	golang.org/x/sync v0.24.0
 	google.golang.org/api v0.304.0
